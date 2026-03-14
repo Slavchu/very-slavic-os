@@ -1,5 +1,3 @@
-GLOBAL_INCLUDES += $(MOD_DIR)/hal
-
-ifeq ($(ARCH), RISC)
+ifeq ($(ARCH), RISC_V)
 	SUB_MODULES += hal/RISC_V
 endif
