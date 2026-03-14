@@ -57,6 +57,10 @@ FINAL_CFLAGS := $(CFLAGS) $(GLOBAL_INCLUDES) $(GLOBAL_DEFINES)
 
 all: $(BUILD_DIR)/core.bin
 
+flash: all
+	$(ECHO) flashing TARGET=$(TARGET)
+	$(call FLASH_CMD,$<)
+
 # Generating binary
 $(BUILD_DIR)/core.bin: $(BUILD_DIR)/core.elf
 	$(ECHO) ">>> Creating image: $@"
