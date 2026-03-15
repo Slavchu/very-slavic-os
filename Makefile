@@ -11,6 +11,7 @@ endif
 BUILD_DIR := build
 MODULES   := core hal
 ECHO      := @echo
+DEBUG			?= 0
 
 # 3. Includes
 include make/toolchain.mk
@@ -31,10 +32,8 @@ define LOAD_MODULE
     LOCAL_DEFINES  :=
     SUB_MODULES    :=
     
-    # Створюємо змінну зі шляхом поточного модуля (наприклад, "core" або "hal/RISC_V")
     MOD_DIR        := $(1)
 
-    # Тепер інклюдимо модуль. Він зможе використовувати $(MOD_DIR)
     include $(1)/make.mk
 
     SRCS            += $$(addprefix $(1)/, $$(SRC))

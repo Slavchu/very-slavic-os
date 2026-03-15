@@ -5,6 +5,10 @@ ifeq ($(TARGET), esp32_c3)
 	ARCH := RISC_V
 endif
 
+ifeq ($(DEBUG), 1)
+	CFLAGS += -g -O0
+endif
+
 CC 			:= $(CROSS_COMPILE)gcc
 AS 			:= $(CROSS_COMPILE)gcc
 LD 			:= $(CROSS_COMPILE)gcc
