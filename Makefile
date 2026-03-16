@@ -68,7 +68,7 @@ $(BUILD_DIR)/core.bin: $(BUILD_DIR)/core.elf
 # Linker
 $(BUILD_DIR)/core.elf: $(OBJS)
 	$(ECHO) ">>> Linking: $@"
-	$(LD) $(LDFLAGS) -T hal/ESP32/esp32c3.ld $(OBJS) -o $@
+	$(LD) $(LDFLAGS) $(OBJS) -o $@
 
 # C compiling
 $(BUILD_DIR)/%.c.o: %.c

@@ -1,7 +1,7 @@
 ifeq ($(TARGET), esp32_c3)
 	CROSS_COMPILE := riscv-none-elf-
-	ARCH_FLAGS := -march=rv32imc_zicsr -mabi=ilp32
-	CFLAGS += -ffreestanding
+	ARCH_FLAGS := -march=rv32imc_zicsr -mabi=ilp32 -mcmodel=medany
+	CFLAGS += -ffreestanding  -mrelax
 	ARCH := RISC_V
 endif
 
@@ -16,5 +16,5 @@ OBJCOPY := $(CROSS_COMPILE)objcopy
 RM			:= rm
 
 CFLAGS  += $(ARCH_FLAGS) -nostdlib -fno-builtin
-LDFLAGS += -nostartfiles -nostdlib
+LDFLAGS += -nostartfiles -nostdlib -mno-relax
 ASFLAGS += $(ARCH_FLAGS) -x assembler-with-cpp
