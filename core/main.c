@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-#define BIT(x) ((uint32_t) 1U << (x))
+#define BIT(x) ((uint32_t)1U << (x))
 #define REG(x) ((volatile uint32_t *)(x))
 #define C3_SYSTEM 0x600c0000
 #define C3_SENSITIVE 0x600c1000
@@ -46,40 +46,36 @@
 #define C3_AES_XTS 0x600CC000
 
 void disable_watchdogs() {
-  REG(C3_RTCCNTL)[42] = 0x50d83aa1; // Disable write protection
-  // REG(C3_RTCCNTL)[36] &= BIT(31);    // Disable RTC WDT
-  REG(C3_RTCCNTL)[36] = 0; // Disable RTC WDT
-  REG(C3_RTCCNTL)[35] = 0; // Disable
+    REG(C3_RTCCNTL)[42] = 0x50d83aa1; // Disable write protection
+    // REG(C3_RTCCNTL)[36] &= BIT(31);    // Disable RTC WDT
+    REG(C3_RTCCNTL)[36] = 0; // Disable RTC WDT
+    REG(C3_RTCCNTL)[35] = 0; // Disable
 
-  // bootloader_super_wdt_auto_feed()
-  REG(C3_RTCCNTL)[44] = 0x8F1D312A;
-  REG(C3_RTCCNTL)[43] |= BIT(31);
-  REG(C3_RTCCNTL)[45] = 0;
+    // bootloader_super_wdt_auto_feed()
+    REG(C3_RTCCNTL)[44] = 0x8F1D312A;
+    REG(C3_RTCCNTL)[43] |= BIT(31);
+    REG(C3_RTCCNTL)[45] = 0;
 
-  REG(C3_TIMERGROUP0)[63] &= ~BIT(9); // TIMG_REGCLK -> disable TIMG_WDT_CLK
-  REG(C3_TIMERGROUP0)[18] = 0;        // Disable TG0 WDT
-  REG(C3_TIMERGROUP1)[18] = 0;        // Disable TG1 WDT
+    REG(C3_TIMERGROUP0)[63] &= ~BIT(9); // TIMG_REGCLK -> disable TIMG_WDT_CLK
+    REG(C3_TIMERGROUP0)[18] = 0;        // Disable TG0 WDT
+    REG(C3_TIMERGROUP1)[18] = 0;        // Disable TG1 WDT
 }
 
+extern int ets_printf(const char *fmt, ...);
+
+volatile int i = 0;
 void main() {
-  // Першим ділом присипляємо сторожових псів!
-  disable_watchdogs();
+    // Першим ділом присипляємо сторожових псів!
+    disable_watchdogs();
 
-  volatile unsigned int *uart0_fifo = (volatile unsigned int *)0x60000000;
+    volatile unsigned int *uart0_fifo = (volatile unsigned int *)0x60000000;
 
-  for (volatile int i = 0; i < 1000000; i++)
-    ;
+    for (; i < 1000000; i++)
+        ;
 
-  while (1) {
-    *uart0_fifo = 'Z';
-    *uart0_fifo = 'A';
-    *uart0_fifo = 'L';
-    *uart0_fifo = 'U';
-    *uart0_fifo = 'P';
-    *uart0_fifo = 'A';
-    *uart0_fifo = '\r';
-    *uart0_fifo = '\n';
-    for (volatile int i = 0; i < 1000000; i++)
-      ;
-  }
+    while (1) {
+        ets_printf("Zalupa %d\r\n", ++i);
+        for (i = 0; i < 1000000; i++)
+            ;
+    }
 }
