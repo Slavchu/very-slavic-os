@@ -15,6 +15,6 @@ LD 			:= $(CROSS_COMPILE)gcc
 OBJCOPY := $(CROSS_COMPILE)objcopy
 RM			:= rm
 
-CFLAGS  += $(ARCH_FLAGS) -nostdlib -fno-builtin
+CFLAGS  += $(ARCH_FLAGS) -nostdlib -fno-builtin -std=c23
 LDFLAGS += -nostartfiles -nostdlib -mno-relax
 ASFLAGS += $(ARCH_FLAGS) -x assembler-with-cpp
