@@ -1,3 +1,9 @@
 ifeq ($(ARCH), RISC_V)
 	SUB_MODULES += hal/RISC_V
 endif
+
+ifeq ($(TARGET), esp32_c3)
+	SUB_MODULES += hal/esp32c3
+endif
+
+LOCAL_INCLUDES += include

@@ -1,3 +1,3 @@
 include $(MOD_DIR)/source.mk
 
-SUB_MODULES += core/utils
+LOCAL_INCLUDES += include
