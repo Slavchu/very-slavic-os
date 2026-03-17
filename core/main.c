@@ -4,14 +4,7 @@
 
 extern int ets_printf(const char *fmt, ...);
 
-void disable_watchdogs() {
-    for (int i = 0; i < watchdog_cnt; i++) {
-        watchdog_set_enable(&watchdogs[i], 0);
-    }
-}
-
 void init() { 
-    disable_watchdogs(); 
     hal_init();
 }
 
