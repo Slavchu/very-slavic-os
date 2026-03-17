@@ -1,4 +1,5 @@
 #include <hal/watchdog.h>
+#include <hal/hal.h>
 #include <stdint.h>
 
 extern int ets_printf(const char *fmt, ...);
@@ -9,13 +10,15 @@ void disable_watchdogs() {
     }
 }
 
-void init() { disable_watchdogs(); }
+void init() { 
+    disable_watchdogs(); 
+    hal_init();
+}
 
 void main() {
-    volatile unsigned int *uart0_fifo = (volatile unsigned int *)0x60000000;
     init();
 
-    for (int i; i < 1000000; i++)
+    for (int i = 0; i < 1000000; i++)
         ;
 
     while (1) {
