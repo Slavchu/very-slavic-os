@@ -1,0 +1,8 @@
+[submodule "esp-idf"]
+  path = hal/esp32c3/esp-idf
+  url = https://github.com/espressif/esp-idf.git
+  branch = release/v6.0
+[submodule "hal/esp32c3/esp-idf"]
+	path = hal/esp32c3/esp-idf
+	url = https://github.com/espressif/esp-idf.git
+	branch = release/v6.0

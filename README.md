@@ -2,6 +2,10 @@
 This is my very first and very ugly steps to write an operating system. Generally it is my attempt to make my coursework and diploma be more interesting. If you want to see project docs please refer: [here](docs/README.md)
 
 # Instructions
+Firstly you need to init submodules
+```bash
+git submodule update --init --recursive
+```
 ## Build
 ```bash
 make TARGET=[target]

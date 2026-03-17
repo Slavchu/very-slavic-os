@@ -1,8 +1,7 @@
 #include <hal/watchdog.h>
 #include <hal/hal.h>
 #include <stdint.h>
-
-extern int ets_printf(const char *fmt, ...);
+#include <ets_sys.h>
 
 void init() { 
     hal_init();
