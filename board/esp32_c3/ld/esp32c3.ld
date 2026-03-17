@@ -23,6 +23,13 @@ SECTIONS
     _text_end = .;
   } > IRAM
 
+  .func_tables : {
+     . = ALIGN(4);   
+     PROVIDE(_func_tables_start = .);
+     KEEP(*(SORT_BY_NAME(.func_tables.*)))
+     PROVIDE(_func_tables_end = .);
+  } > DRAM
+
   .data : 
   {
     _data_start = .;
