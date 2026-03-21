@@ -1,0 +1,49 @@
+name: Build
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  very-slavic-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Slavic format
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format
+          git fetch origin main
+          CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRT origin/main | grep -E '\.(c|h)$' || true)
+
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "Perun confirmed that this code is formated by real slav"
+            exit 0
+          fi
+          echo "$CHANGED_FILES"
+          echo "$CHANGED_FILES" | xargs clang-format -i
+          git diff --exit-code
+
+      - name: Install tooulchains
+        run: |
+          wget -q https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v15.2.0-1/xpack-riscv-none-elf-gcc-15.2.0-1-linux-x64.tar.gz
+          sudo tar -xzf xpack-riscv-none-elf-gcc-15.2.0-1-linux-x64.tar.gz -C /opt
+          echo "/opt/xpack-riscv-none-elf-gcc-15.2.0-1/bin:" >> $GITHUB_PATH
+          pipx install esptool
+
+      - name: Verify Compiler
+        run: |
+          riscv-none-elf-gcc --version
+          esptool -h
+
+      - name: Build Project
+        run: |
+          make TARGET=esp32_c3 all
+          make clean
+          make TARGET=esp32_c3 DEBUG=1
