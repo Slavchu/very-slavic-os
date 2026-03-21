@@ -8,20 +8,21 @@ ifneq ($(MAKECMDGOALS),clean)
 endif
 
 # 2. Variables
-BUILD_DIR := build
+BUILD_DIR ?= build
 MODULES   := core hal
 ECHO      := @echo
 DEBUG			?= 0
+GLOBAL_DEFINES  :=
 
 # 3. Includes
 include make/toolchain.mk
 include make/target.mk
+include make/defaults.mk
 
 # 4. Module Loader System
 LOADED_MODULES  := 
 SRCS            :=
 GLOBAL_INCLUDES :=
-GLOBAL_DEFINES  :=
 
 define LOAD_MODULE
   ifeq ($$(filter $(1),$$(LOADED_MODULES)),)

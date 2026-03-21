@@ -4,6 +4,7 @@
 #include <hal/watchdog.h>
 #include <stdint.h>
 #include <systimer.h>
+#include <log.h>
 
 void init() { run_table(FUNC_TABLE_PREINIT, 0); }
 
@@ -15,10 +16,10 @@ void main() {
 
     while (1) {
         if (!flag)
-            ets_printf("Zalupa\r\n");
+            LOG_INFO("Zalupa\r\n");
         else {
             flag = 0;
-            ets_printf("Interrupted\r\n");
+            LOG_INFO("Interrupted\r\n");
         }
         for (int i = 0; i < 1000000; i++)
             ;
