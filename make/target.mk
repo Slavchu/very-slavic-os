@@ -1,8 +1,8 @@
 #Creating image
 ifeq ($(TARGET), esp32_c3)
     CREATE_IMAGE_CMD = esptool --chip esp32c3 elf2image --flash-mode dio --flash-freq 40m $(1)
-	LDSCRIPT_DIR := board/esp32_c3/ld
-	GLOBAL_DEFINES += -DLOG_PRINTF_FUNC=ets_printf
+		LDSCRIPT_DIR := board/esp32_c3/ld
+		GLOBAL_DEFINES += -DLOG_PRINTF_FUNC=ets_printf
 else
     CREATE_IMAGE_CMD = @echo "No image creation defined for TARGET=$(TARGET). Skipping."
 endif

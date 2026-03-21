@@ -8,6 +8,9 @@ endif
 
 ifeq ($(DEBUG), 1)
 	CFLAGS += -g -O0
+else
+  CFLAGS += -Os -ffunction-sections -fdata-sections
+  LDFLAGS += -Os -Wl,--gc-sections
 endif
 
 CC 			:= $(CROSS_COMPILE)gcc
@@ -18,5 +21,5 @@ RM			:= rm
 CP			:= cp
 
 CFLAGS  += $(ARCH_FLAGS) -nostdlib -fno-builtin -std=c23
-LDFLAGS += -nostartfiles -nostdlib -mno-relax
+LDFLAGS += -nostartfiles -nostdlib
 ASFLAGS += $(ARCH_FLAGS) -x assembler-with-cpp
