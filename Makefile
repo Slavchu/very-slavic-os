@@ -56,6 +56,11 @@ FINAL_CFLAGS := $(CFLAGS) $(GLOBAL_INCLUDES) $(GLOBAL_DEFINES)
 
 all: $(BUILD_DIR)/core.bin
 
+clangd: .clangd
+
+.clangd:
+	$(CP) $(CLANGD_PATH) .clangd
+
 flash: all
 	$(ECHO) flashing TARGET=$(TARGET)
 	$(call FLASH_CMD,$<)
@@ -73,13 +78,13 @@ $(BUILD_DIR)/core.elf: $(OBJS)
 # C compiling
 $(BUILD_DIR)/%.c.o: %.c
 	@mkdir -p $(dir $@)
-	$(ECHO) "CC $<"
+	$(ECHO) "$CC $<"
 	$(CC) $(FINAL_CFLAGS) -c $< -o $@
 
 # Assembly compiling
 $(BUILD_DIR)/%.s.o: %.s
 	@mkdir -p $(dir $@)
-	$(ECHO) "AS $<"
+	$(ECHO) "$AS $<"
 	$(CC) $(ASFLAGS) $(FINAL_CFLAGS) -c $< -o $@
 
 clean:

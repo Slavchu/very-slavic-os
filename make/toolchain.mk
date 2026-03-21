@@ -1,8 +1,9 @@
 ifeq ($(TARGET), esp32_c3)
 	CROSS_COMPILE := riscv-none-elf-
-	ARCH_FLAGS := -march=rv32imc_zicsr -mabi=ilp32 -mcmodel=medany
+	ARCH_FLAGS := -march=rv32imc_zicsr_zifencei -mabi=ilp32 -mcmodel=medany
 	CFLAGS += -ffreestanding  -mrelax
 	ARCH := RISC_V
+	CLANGD_PATH := clangd/clangd_riscv
 endif
 
 ifeq ($(DEBUG), 1)
@@ -14,6 +15,7 @@ AS 			:= $(CROSS_COMPILE)gcc
 LD 			:= $(CROSS_COMPILE)gcc
 OBJCOPY := $(CROSS_COMPILE)objcopy
 RM			:= rm
+CP			:= cp
 
 CFLAGS  += $(ARCH_FLAGS) -nostdlib -fno-builtin -std=c23
 LDFLAGS += -nostartfiles -nostdlib -mno-relax
