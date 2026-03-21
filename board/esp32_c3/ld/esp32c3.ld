@@ -22,6 +22,12 @@ SECTIONS
     *(.text .text.*)
     _text_end = .;
   } > IRAM
+  .vectors : ALIGN(256)
+  {
+    _vectors_start = .;
+    KEEP(*(.vectors.riscv))
+    KEEP(*(.vectors.esp32)) 
+  } > IRAM
 
   .func_tables : {
      . = ALIGN(4);   

@@ -1,2 +1,2 @@
 include $(MOD_DIR)/source.mk
-LOCAL_INCLUDES += include
+LOCAL_INCLUDES += include/

@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 enum func_table_ids : uint16_t {
-    FUNC_TABLE_INIT,
+    FUNC_TABLE_PREINIT,
     FUNC_TABLE_INVALID /* Keep last */
 };
 
