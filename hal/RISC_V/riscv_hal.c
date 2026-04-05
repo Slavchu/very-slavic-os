@@ -1,16 +1,16 @@
+#include <ets_sys.h>
+#include <hal/hal.h>
 #include <limits.h>
 #include <riscv_hal.h>
 #include <stdint.h>
-#include <hal/hal.h>
-#include <ets_sys.h>
 
-#define RTC_CNTL_BASE          0x60008000
-#define RTC_CNTL_OPTIONS0_REG  (RTC_CNTL_BASE + 0x0000)
-#define RTC_CNTL_SW_SYS_RST    (1 << 31)
-#define CLINT_MTIMECMP_LOW    (*(volatile uint32_t*)(0x600C1008))
-#define CLINT_MTIMECMP_HIGH   (*(volatile uint32_t*)(0x600C100C))
-#define INTERRUPT_CORE0_CPU_INT_THRESH_REG  (*(volatile uint32_t*)(0x600c2000))
-//vector table of IRQ
+#define RTC_CNTL_BASE 0x60008000
+#define RTC_CNTL_OPTIONS0_REG (RTC_CNTL_BASE + 0x0000)
+#define RTC_CNTL_SW_SYS_RST (1 << 31)
+#define CLINT_MTIMECMP_LOW (*(volatile uint32_t *)(0x600C1008))
+#define CLINT_MTIMECMP_HIGH (*(volatile uint32_t *)(0x600C100C))
+#define INTERRUPT_CORE0_CPU_INT_THRESH_REG (*(volatile uint32_t *)(0x600c2000))
+// vector table of IRQ
 extern void _vectors_start();
 
 static void riscv_hal_init_irq_vector(void) {
@@ -20,7 +20,7 @@ static void riscv_hal_init_irq_vector(void) {
 }
 
 static void riscv_hal_global_interrupts_enable() {
-    __asm__ volatile("csrs mstatus, %0" :: "r"(1 << 3)); // csrs — set bits in CSR
+    __asm__ volatile("csrs mstatus, %0" ::"r"(1 << 3)); // csrs — set bits in CSR
 }
 
 static void riscv_hal_setup_irq(void) {
@@ -29,11 +29,10 @@ static void riscv_hal_setup_irq(void) {
     riscv_hal_global_interrupts_enable();
 }
 
-void riscv_hal_init(void *UNUSED) { riscv_hal_setup_irq(); }
+void riscv_hal_init(void *UNUSED) {
+    riscv_hal_setup_irq();
+}
 
 void hal_reboot(void) {
     (*(volatile uint32_t *)RTC_CNTL_OPTIONS0_REG) |= RTC_CNTL_SW_SYS_RST;
-    while(1) {
-        __asm__ __volatile__ ("nop");
-    }
 }

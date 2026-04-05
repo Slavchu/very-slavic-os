@@ -1,4 +1,4 @@
-ifeq ($(ARCH), RISC_V)
+ifeq ($(ARCH), RISC_V_32)
 	SUB_MODULES += hal/RISC_V
 endif
 

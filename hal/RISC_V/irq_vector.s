@@ -15,7 +15,7 @@ _vectors_start:
 .global riscv_interrupts_panic
 _clint_trap:
 #saving registers
-    addi sp, sp, -128
+    addi sp, sp, -132
     sw ra,  0(sp)
     sw gp,  8(sp)   # x3
     sw tp,  12(sp)  # x4
@@ -48,13 +48,16 @@ _clint_trap:
     sw t6,  120(sp) # x31
     csrr t0, mepc   # pc
     sw t0, 124(sp)
+    addi t0, sp, 132 #sp   
+    sw t0, 128(sp)
 
 # calling interrupt implementation
     mv a0, sp
     call riscv_interrupts_clint
-    mv sp, a0
+    la t0, next_ctx
+    lw sp, 0(t0)
 # restoring registers
-    lw t0, 124(sp)
+    lw t0, 120(sp)
     csrw mepc, t0 # restoring pc
     lw ra,  0(sp)
     lw gp,  8(sp)
