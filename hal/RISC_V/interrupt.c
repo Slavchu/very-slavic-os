@@ -1,5 +1,6 @@
 #include <hal/context_operations.h>
 #include <hal/hal.h>
+#include <hal/interrupt.h>
 #include <limits.h>
 #include <log.h>
 #include <stdint.h>
@@ -14,15 +15,6 @@
 #define CLINT_MTIMECMP_HIGH (*(volatile uint32_t *)(CLINT_BASE + 0x000C))
 #define TICKS_PER_MS 16000
 
-void riscv_interrupts_clint(hal_task_context ctx) {
-    hal_clear_systimer_interrupt();
-    systimer_tick();
-
-    struct task_ctx *current = get_current_task();
-    current->ctx = ctx;
-    switch_task(ctx);
-}
-
 void riscv_interrupts_panic() {
     uint32_t mepc, mtval, mcause;
     __asm__ volatile("csrr %0, mepc\n"
@@ -36,4 +28,18 @@ void riscv_interrupts_panic() {
     LOG_CRITICAL("MTVAL  : 0x%08x (Опкод, що викликав паніку)\n", mtval);
     LOG_CRITICAL("===========================\n");
     hal_reboot();
+}
+
+uint16_t interrupt_get_id() {
+    uint32_t mcause = 0;
+    __asm__ volatile("csrr %0, mcause" : "=r"(mcause));
+    return mcause & 0x1F; // Clearing is interrupt bit
+}
+
+void interrupt_enable_isr() {
+    __asm__ volatile("csrs mstatus, %0" ::"r"(1 << 3));
+}
+
+void interrupt_disable_isr() {
+    __asm__ volatile("csrc mstatus, %0" ::"r"(1 << 3));
 }

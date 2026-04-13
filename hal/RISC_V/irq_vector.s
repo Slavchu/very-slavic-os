@@ -3,15 +3,14 @@
 .align 8
 _vectors_start:
     j _panic_trap
-    .rept 6
-    j _panic_trap
-    .endr
+    .rept 31
     j _clint_trap
+    .endr
 
 .section .text
 .global _clint_trap
 .global _panic_trap
-.global riscv_interrupts_clint
+.global interrupt_dispatcher
 .global riscv_interrupts_panic
 _clint_trap:
 #saving registers
@@ -53,7 +52,7 @@ _clint_trap:
 
 # calling interrupt implementation
     mv a0, sp
-    call riscv_interrupts_clint
+    call interrupt_dispatcher
     la t0, next_ctx
     lw sp, 0(t0)
 # restoring registers

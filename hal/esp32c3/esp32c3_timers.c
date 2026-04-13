@@ -1,25 +1,35 @@
 #include <esp32c3/esp32c3_common.h>
 #include <esp32c3/esp32c3_periph.h>
 #include <hal/hal.h>
+#include <hal/interrupt.h>
+#include <systimer.h>
+#include <task.h>
 
 #define DEFAULT_SYSTIMER_PERIOD 400000000
+
+static void systimer_interrupt(hal_task_context ctx) {
+    hal_clear_systimer_interrupt();
+    // TODO: Refactor by adding callbacks
+    systimer_tick();
+
+    struct task_ctx *current = get_current_task();
+    current->ctx = ctx;
+    switch_task(ctx);
+}
 
 void hal_setup_systimer(void) {
     SYSTEM[SYSTEM_PERIP_CLK_EN0_REG / sizeof(SYSTEM[0])] |= SYSTEM_SYSTIMER_CLK_EN_BIT;
 
     SYSTIMER[SYSTIMER_TARGET0_CONF_REG / sizeof(SYSTIMER[0])] = SYSTIMER_TARGET_PERIOD_MODE_BIT;
-    SYSTIMER[SYSTIMER_TARGET0_CONF_REG / sizeof(SYSTIMER[0])] |=
-        (DEFAULT_SYSTIMER_PERIOD & SYSTIMER_TARGET_PERIOD_MASK);
+    SYSTIMER[SYSTIMER_TARGET0_CONF_REG / sizeof(SYSTIMER[0])] |= (DEFAULT_SYSTIMER_PERIOD & SYSTIMER_TARGET_PERIOD_MASK);
 
     SYSTIMER[SYSTIMER_TARGET0_HI_REG / sizeof(SYSTIMER[0])] = SYSTIMER_TARGET_HI_BITMASK & 0;
     SYSTIMER[SYSTIMER_TARGET0_LO_REG / sizeof(SYSTIMER[0])] = 0;
 
     SYSTIMER[SYSTIMER_COMP0_LOAD_REG / sizeof(SYSTIMER[0])] = 1 & SYSTIMER_COMP_LOAD_REG_MASK;
-    SYSTIMER[SYSTIMER_INTERRUPT_ENA_REG / sizeof(SYSTIMER[0])] =
-        BIT(0); // enabling interrupts at TARGET0
+    SYSTIMER[SYSTIMER_INTERRUPT_ENA_REG / sizeof(SYSTIMER[0])] = BIT(0); // enabling interrupts at TARGET0
 
-    SYSTIMER[SYSTIMER_CONFIG_REG / sizeof(SYSTIMER[0])] =
-        SYSTIMER_TARGET0_WORK_EN_BIT | SYSTIMER_TIMER_UNIT0_WORK_EN;
+    SYSTIMER[SYSTIMER_CONFIG_REG / sizeof(SYSTIMER[0])] = SYSTIMER_TARGET0_WORK_EN_BIT | SYSTIMER_TIMER_UNIT0_WORK_EN;
 
     INTERRUPT[INTERRUPT_CORE0_SYSTIMER_TARGET0_INT_MAP_REG / sizeof(INTERRUPT[0])] = 7;
 
@@ -27,6 +37,8 @@ void hal_setup_systimer(void) {
 
     INTERRUPT[INTERRUPT_CORE0_CPU_INT_TYPE_REG / sizeof(INTERRUPT[0])] &= ~BIT(7);
     INTERRUPT[INTERRUPT_CORE0_CPU_INT_ENABLE_REG / sizeof(INTERRUPT[0])] |= BIT(7);
+
+    interrupt_register(7, systimer_interrupt, true);
 }
 
 void hal_clear_systimer_interrupt(void) {
