@@ -6,3 +6,6 @@
 	path = hal/esp32c3/esp-idf
 	url = https://github.com/espressif/esp-idf.git
 	branch = release/v6.0
+[submodule "core/picolibc/picolibc"]
+	path = core/picolibc/picolibc
+	url = https://github.com/picolibc/picolibc.git
