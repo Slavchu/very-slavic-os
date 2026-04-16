@@ -30,7 +30,7 @@ void hal_reboot(void) {
 }
 
 __attribute__((noreturn)) void _exit(int status) {
-   while (1) {
-        __asm__ volatile ("wfi");
+    while (1) {
+        __asm__ volatile("wfi");
     }
 }
