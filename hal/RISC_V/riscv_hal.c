@@ -6,10 +6,6 @@
 #include <riscv_interrupts.h>
 #include <stdint.h>
 
-#define RTC_CNTL_BASE 0x60008000
-#define RTC_CNTL_OPTIONS0_REG (RTC_CNTL_BASE + 0x0000)
-#define RTC_CNTL_SW_SYS_RST (1 << 31)
-
 // vector table of IRQ
 extern void _vectors_start();
 
@@ -31,5 +27,4 @@ void riscv_hal_init(void *UNUSED) {
 }
 
 void hal_reboot(void) {
-    (*(volatile uint32_t *)RTC_CNTL_OPTIONS0_REG) |= RTC_CNTL_SW_SYS_RST;
 }
