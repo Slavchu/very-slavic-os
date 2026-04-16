@@ -18,7 +18,7 @@ jobs:
       - name: Slavic format
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang-format
+          sudo apt-get install -y clang-format meson ninja
           git fetch origin main
           CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRT origin/main | grep -E '\.(c|h)$' || true)
 

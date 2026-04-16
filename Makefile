@@ -7,6 +7,7 @@ ifneq ($(MAKECMDGOALS),clean)
   endif
 endif
 
+.DEFAULT_GOAL := all
 # 2. Variables
 BUILD_DIR ?= build
 MODULES   := core hal
@@ -50,7 +51,7 @@ $(foreach mod,$(MODULES),$(eval $(call LOAD_MODULE,$(mod))))
 
 # 6. Object files mapping
 OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
-FINAL_CFLAGS := $(CFLAGS) $(GLOBAL_INCLUDES) $(GLOBAL_DEFINES)
+FINAL_CFLAGS := $(CFLAGS) $(GLOBAL_INCLUDES) $(GLOBAL_DEFINES) $(GLOBAL_CFLAGS)
 
 # 7. Build Rules
 .PHONY: all clean
@@ -72,9 +73,9 @@ $(BUILD_DIR)/core.bin: $(BUILD_DIR)/core.elf
 	$(call CREATE_IMAGE_CMD,$<)
 
 # Linker
-$(BUILD_DIR)/core.elf: $(OBJS)
+$(BUILD_DIR)/core.elf: $(OBJS) $(DEPS)
 	$(ECHO) ">>> Linking: $@"
-	$(LD) $(LDFLAGS) $(OBJS) -o $@
+	$(LD) $(LDFLAGS) $(OBJS) $(GLOBAL_LDFLAGS) -o $@
 
 # C compiling
 $(BUILD_DIR)/%.c.o: %.c

@@ -1,0 +1,13 @@
+[binaries]
+c = 'riscv-none-elf-gcc'
+ar = 'riscv-none-elf-ar'
+strip = 'riscv-none-elf-strip'
+
+[host_machine]
+system = 'none'
+cpu_family = 'riscv32'
+cpu = 'rv32imc'
+endian = 'little'
+
+[properties]
+c_args = ['-march=rv32imc_zicsr_zifencei', '-mabi=ilp32', '-mcmodel=medany']
