@@ -30,12 +30,19 @@ jobs:
           echo "$CHANGED_FILES" | xargs clang-format -i
           git diff --exit-code
 
-      - name: Install tooulchains
+      - name: Install toolchains
         run: |
           wget -q https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v15.2.0-1/xpack-riscv-none-elf-gcc-15.2.0-1-linux-x64.tar.gz
           sudo tar -xzf xpack-riscv-none-elf-gcc-15.2.0-1-linux-x64.tar.gz -C /opt
           echo "/opt/xpack-riscv-none-elf-gcc-15.2.0-1/bin:" >> $GITHUB_PATH
           pipx install esptool
+
+      - name: Cache Picolibc build
+        id: cache-picolibc
+        uses: actions/cache@v4
+        with:
+          path: build/picolibc_install
+          key: ${{ runner.os }}-picolibc-${{ hashFiles('core/picolibc/picolibc/**', 'core/picolibc/make.mk', 'Makefile') }}
 
       - name: Verify Compiler
         run: |
@@ -44,6 +51,4 @@ jobs:
 
       - name: Build Project
         run: |
-          make TARGET=esp32_c3 all
-          make clean
-          make TARGET=esp32_c3 DEBUG=1
+          make TARGET=esp32_c3 DEBUG=1 -j$(nproc)

@@ -5,7 +5,7 @@ PICOLIBC_TARGET  := $(CURDIR)/$(PICOLIBC_INSTALL)/lib/libc.a
 
 DEPS += $(PICOLIBC_TARGET)
 
-$(PICOLIBC_TARGET):
+$(PICOLIBC_BUILD)/build.ninja:
 	@echo ">>> Configuring Picolibc with Meson..."
 	@mkdir -p $(PICOLIBC_BUILD)
 	@cd $(PICOLIBC_BUILD) && meson setup $(PICOLIBC_SRC) \
@@ -17,9 +17,11 @@ $(PICOLIBC_TARGET):
 		-Dpicocrt=false \
 		-Dformat-default=minimal \
 		-Datomic-ungetc=false \
-		-Dio-c99-formats=false
-	@echo ">>> Building Picolibc with Ninja..."
-	@ninja -C $(PICOLIBC_BUILD) install
+		-Dio-c99-formats=false > /dev/null
+
+$(PICOLIBC_TARGET): $(PICOLIBC_BUILD)/build.ninja
+	@echo ">>> Building/Installing Picolibc with Ninja..."
+	@ninja -C $(PICOLIBC_BUILD) install > /dev/null
 
 GLOBAL_CFLAGS += -isystem $(PICOLIBC_INSTALL)/include
 GLOBAL_LDFLAGS += -L$(PICOLIBC_INSTALL)/lib -Wl,--start-group -lc -lgcc -Wl,--end-group
