@@ -3,7 +3,6 @@
 #include <hal/interrupt.h>
 #include <limits.h>
 #include <riscv_hal.h>
-#include <riscv_interrupts.h>
 #include <stdint.h>
 
 // vector table of IRQ
@@ -19,7 +18,6 @@ static void riscv_hal_setup_irq(void) {
     riscv_hal_init_irq_vector();
     hal_setup_systimer();
     interrupt_init();
-    interrupt_enable_isr();
 }
 
 void riscv_hal_init(void *UNUSED) {

@@ -14,117 +14,113 @@ _vectors_start:
 .global riscv_interrupts_panic
 _clint_trap:
 #saving registers
-    addi sp, sp, -132
-    sw ra,  0(sp)
-    sw gp,  8(sp)   # x3
-    sw tp,  12(sp)  # x4
-    sw t0,  16(sp)  # x5
-    sw t1,  20(sp)  # x6
-    sw t2,  24(sp)  # x7
-    sw s0,  28(sp)  # x8 / fp
-    sw s1,  32(sp)  # x9
-    sw a0,  36(sp)  # x10
-    sw a1,  40(sp)  # x11
-    sw a2,  44(sp)  # x12
-    sw a3,  48(sp)  # x13
-    sw a4,  52(sp)  # x14
-    sw a5,  56(sp)  # x15
-    sw a6,  60(sp)  # x16
-    sw a7,  64(sp)  # x17
-    sw s2,  68(sp)  # x18
-    sw s3,  72(sp)  # x19
-    sw s4,  76(sp)  # x20
-    sw s5,  80(sp)  # x21
-    sw s6,  84(sp)  # x22
-    sw s7,  88(sp)  # x23
-    sw s8,  92(sp)  # x24
-    sw s9,  96(sp)  # x25
-    sw s10, 100(sp) # x26
-    sw s11, 104(sp) # x27
-    sw t3,  108(sp) # x28
-    sw t4,  112(sp) # x29
-    sw t5,  116(sp) # x30
-    sw t6,  120(sp) # x31
-    csrr t0, mepc   # pc
-    sw t0, 124(sp)
-    addi t0, sp, 132 #sp   
-    sw t0, 128(sp)
+    addi sp, sp, -128
+    sw ra,   0(sp)
+    sw gp,   4(sp)
+    sw tp,   8(sp)
+    sw t0,   12(sp)
+    sw t1,   16(sp)
+    sw t2,   20(sp)
+    sw s0,   24(sp)
+    sw s1,   28(sp)
+    sw a0,   32(sp)
+    sw a1,   36(sp)
+    sw a2,   40(sp)
+    sw a3,   44(sp)
+    sw a4,   48(sp)
+    sw a5,   52(sp)
+    sw a6,   56(sp)
+    sw a7,   60(sp)
+    sw s2,   64(sp)
+    sw s3,   68(sp)
+    sw s4,   72(sp)
+    sw s5,   76(sp)
+    sw s6,   80(sp)
+    sw s7,   84(sp)
+    sw s8,   88(sp)
+    sw s9,   92(sp)
+    sw s10,  96(sp)
+    sw s11, 100(sp)
+    sw t3,  104(sp)
+    sw t4,  108(sp)
+    sw t5,  112(sp)
+    sw t6,  116(sp)
 
+    csrr t0, mepc
+    sw t0, 120(sp)
 # calling interrupt implementation
     mv a0, sp
     call interrupt_dispatcher
-    la t0, next_ctx
-    lw sp, 0(t0)
+    mv sp, a0
 # restoring registers
     lw t0, 120(sp)
-    csrw mepc, t0 # restoring pc
-    lw ra,  0(sp)
-    lw gp,  8(sp)
-    lw tp,  12(sp)
-    lw t0,  16(sp)
-    lw t1,  20(sp)
-    lw t2,  24(sp)
-    lw s0,  28(sp)
-    lw s1,  32(sp)
-    lw a0,  36(sp)
-    lw a1,  40(sp)
-    lw a2,  44(sp)
-    lw a3,  48(sp)
-    lw a4,  52(sp)
-    lw a5,  56(sp)
-    lw a6,  60(sp)
-    lw a7,  64(sp)
-    lw s2,  68(sp)
-    lw s3,  72(sp)
-    lw s4,  76(sp)
-    lw s5,  80(sp)
-    lw s6,  84(sp)
-    lw s7,  88(sp)
-    lw s8,  92(sp)
-    lw s9,  96(sp)
-    lw s10, 100(sp)
-    lw s11, 104(sp)
-    lw t3,  108(sp)
-    lw t4,  112(sp)
-    lw t5,  116(sp)
-    lw t6,  120(sp)
+    csrw mepc, t0
+    lw ra,   0(sp)
+    lw gp,   4(sp)
+    lw tp,   8(sp)
+    lw t0,   12(sp)
+    lw t1,   16(sp)
+    lw t2,   20(sp)
+    lw s0,   24(sp)
+    lw s1,   28(sp)
+    lw a0,   32(sp)
+    lw a1,   36(sp)
+    lw a2,   40(sp)
+    lw a3,   44(sp)
+    lw a4,   48(sp)
+    lw a5,   52(sp)
+    lw a6,   56(sp)
+    lw a7,   60(sp)
+    lw s2,   64(sp)
+    lw s3,   68(sp)
+    lw s4,   72(sp)
+    lw s5,   76(sp)
+    lw s6,   80(sp)
+    lw s7,   84(sp)
+    lw s8,   88(sp)
+    lw s9,   92(sp)
+    lw s10,  96(sp)
+    lw s11, 100(sp)
+    lw t3,  104(sp)
+    lw t4,  108(sp)
+    lw t5,  112(sp)
+    lw t6,  116(sp)
     addi sp, sp, 128
     mret
 
 _panic_trap:
     addi sp, sp, -128
-    sw ra,  0(sp)
-    sw gp,  8(sp)   # x3
-    sw tp,  12(sp)  # x4
-    sw t0,  16(sp)  # x5
-    sw t1,  20(sp)  # x6
-    sw t2,  24(sp)  # x7
-    sw s0,  28(sp)  # x8 / fp
-    sw s1,  32(sp)  # x9
-    sw a0,  36(sp)  # x10
-    sw a1,  40(sp)  # x11
-    sw a2,  44(sp)  # x12
-    sw a3,  48(sp)  # x13
-    sw a4,  52(sp)  # x14
-    sw a5,  56(sp)  # x15
-    sw a6,  60(sp)  # x16
-    sw a7,  64(sp)  # x17
-    sw s2,  68(sp)  # x18
-    sw s3,  72(sp)  # x19
-    sw s4,  76(sp)  # x20
-    sw s5,  80(sp)  # x21
-    sw s6,  84(sp)  # x22
-    sw s7,  88(sp)  # x23
-    sw s8,  92(sp)  # x24
-    sw s9,  96(sp)  # x25
-    sw s10, 100(sp) # x26
-    sw s11, 104(sp) # x27
-    sw t3,  108(sp) # x28
-    sw t4,  112(sp) # x29
-    sw t5,  116(sp) # x30
-    sw t6,  120(sp) # x31
-    csrr t0, mepc   # pc
-    sw t0, 124(sp)
-# calling interrupt implementation
-    mv a0, sp
+    sw ra,   0(sp)
+    sw gp,   4(sp)
+    sw tp,   8(sp)
+    sw t0,   12(sp)
+    sw t1,   16(sp)
+    sw t2,   20(sp)
+    sw s0,   24(sp)
+    sw s1,   28(sp)
+    sw a0,   32(sp)
+    sw a1,   36(sp)
+    sw a2,   40(sp)
+    sw a3,   44(sp)
+    sw a4,   48(sp)
+    sw a5,   52(sp)
+    sw a6,   56(sp)
+    sw a7,   60(sp)
+    sw s2,   64(sp)
+    sw s3,   68(sp)
+    sw s4,   72(sp)
+    sw s5,   76(sp)
+    sw s6,   80(sp)
+    sw s7,   84(sp)
+    sw s8,   88(sp)
+    sw s9,   92(sp)
+    sw s10,  96(sp)
+    sw s11, 100(sp)
+    sw t3,  104(sp)
+    sw t4,  108(sp)
+    sw t5,  112(sp)
+    sw t6,  116(sp)
+
+    csrr t0, mepc
+    sw t0, 120(sp)
     call riscv_interrupts_panic

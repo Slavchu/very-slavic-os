@@ -5,7 +5,6 @@
 #include <log.h>
 #include <stdint.h>
 #include <systimer.h>
-#include <task.h>
 #include <utils.h>
 
 #define CLINT_BASE 0x600C1000
@@ -22,10 +21,10 @@ void riscv_interrupts_panic() {
                      "csrr %2, mcause\n"
                      : "=r"(mepc), "=r"(mtval), "=r"(mcause));
 
-    LOG_CRITICAL("=== SLAVIC KERNEL BLYATED ===");
-    LOG_CRITICAL("MCAUSE : %d (0x%08x)\n", mcause, mcause);
+    LOG_CRITICAL("=== SLAVIC KERNEL BLYATED ===\r\n");
+    LOG_CRITICAL("MCAUSE : %d (0x%08x)\r\n", mcause, mcause);
     LOG_CRITICAL("MEPC   : 0x%08x \n", mepc);
-    LOG_CRITICAL("MTVAL  : 0x%08x (Опкод, що викликав паніку)\n", mtval);
+    LOG_CRITICAL("MTVAL  : 0x%08x \r\n", mtval);
     LOG_CRITICAL("===========================\n");
     hal_reboot();
 }

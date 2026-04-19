@@ -3,7 +3,7 @@
 #include <hal/context_operations.h>
 #include <stdint.h>
 
-typedef void (*interrupt_cb_t)(hal_task_context ctx);
+typedef void (*interrupt_cb_t)(hal_task_context *ctx);
 
 void interrupt_init();
 
