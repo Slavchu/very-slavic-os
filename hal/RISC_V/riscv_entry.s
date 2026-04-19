@@ -27,6 +27,7 @@ _start:
   .option pop
 
   la sp, _stack_top         # Set stack pointer
+  addi sp, sp, -128         # this will be reserved for context
 
   la t0, _bss_start
   la t1, _bss_end

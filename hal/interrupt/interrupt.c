@@ -14,14 +14,16 @@ struct interrupt_param {
 
 static volatile struct interrupt_param interrupt_table[INTERRUPT_MAX] = {};
 
-void interrupt_dispatcher(hal_task_context ctx) {
-    auto interrupt_param = interrupt_table[interrupt_get_id()];
+hal_task_context interrupt_dispatcher(hal_task_context ctx) {
+    uint8_t interrupt_id = interrupt_get_id();
+    auto interrupt_param = interrupt_table[interrupt_id];
 
     if (!interrupt_param.interrupt_handlers || !interrupt_param.enable) {
         LOG_ERROR("Unhandled interrupt %d", interrupt_get_id());
-        return;
+        return ctx;
     }
-    interrupt_param.interrupt_handlers(ctx);
+    interrupt_param.interrupt_handlers(&ctx);
+    return ctx;
 }
 
 void interrupt_init() {

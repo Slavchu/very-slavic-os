@@ -10,10 +10,10 @@ MEMORY
 }
 
 _stack_top = ORIGIN(DRAM) + LENGTH(DRAM);
+_stack_bot = _stack_top - 1K;
 
 SECTIONS
 {
-  /* --- Instruction Section --- */
   .text : ALIGN(4)
   {
     _text_start = .;
@@ -80,5 +80,5 @@ SECTIONS
 
   . = ALIGN(16);
   PROVIDE(__heap_start = .);
-  PROVIDE(__heap_end = _stack_top - 0x1000);
+  PROVIDE(__heap_end = _stack_bot);
 }

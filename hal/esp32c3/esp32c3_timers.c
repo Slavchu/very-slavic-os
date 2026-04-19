@@ -2,19 +2,15 @@
 #include <esp32c3/esp32c3_periph.h>
 #include <hal/hal.h>
 #include <hal/interrupt.h>
+#include <scheduler.h>
 #include <systimer.h>
-#include <task.h>
 
 #define DEFAULT_SYSTIMER_PERIOD 400000000
 
-static void systimer_interrupt(hal_task_context ctx) {
+static void systimer_interrupt(hal_task_context *ctx) {
     hal_clear_systimer_interrupt();
     // TODO: Refactor by adding callbacks
-    systimer_tick();
-
-    struct task_ctx *current = get_current_task();
-    current->ctx = ctx;
-    switch_task(ctx);
+    scheduler_tick(ctx);
 }
 
 void hal_setup_systimer(void) {
