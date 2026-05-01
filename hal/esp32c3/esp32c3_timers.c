@@ -16,28 +16,27 @@ static void systimer_interrupt(hal_task_context *ctx) {
 void hal_setup_systimer(void) {
     SYSTEM[SYSTEM_PERIP_CLK_EN0_REG / sizeof(SYSTEM[0])] |= SYSTEM_SYSTIMER_CLK_EN_BIT;
 
-    SYSTIMER[SYSTIMER_TARGET0_CONF_REG / sizeof(SYSTIMER[0])] = SYSTIMER_TARGET_PERIOD_MODE_BIT;
-    SYSTIMER[SYSTIMER_TARGET0_CONF_REG / sizeof(SYSTIMER[0])] |= (DEFAULT_SYSTIMER_PERIOD & SYSTIMER_TARGET_PERIOD_MASK);
+    SYSTIMER.target0_conf.val = 0;
+    SYSTIMER.target0_conf.period_mode = 1;
+    SYSTIMER.target0_conf.period = (DEFAULT_SYSTIMER_PERIOD & 0x1FFFFFF);
 
-    SYSTIMER[SYSTIMER_TARGET0_HI_REG / sizeof(SYSTIMER[0])] = SYSTIMER_TARGET_HI_BITMASK & 0;
-    SYSTIMER[SYSTIMER_TARGET0_LO_REG / sizeof(SYSTIMER[0])] = 0;
+    SYSTIMER.target0_lo = 0;
+    SYSTIMER.target0_hi.val = 0;
+    SYSTIMER.target0_load = 1;
+    SYSTIMER.int_ena = 1;
+    SYSTIMER.conf.val = 0;
+    SYSTIMER.conf.unit0_work_en = 1;
+    SYSTIMER.conf.target0_work_en = 1;
 
-    SYSTIMER[SYSTIMER_COMP0_LOAD_REG / sizeof(SYSTIMER[0])] = 1 & SYSTIMER_COMP_LOAD_REG_MASK;
-    SYSTIMER[SYSTIMER_INTERRUPT_ENA_REG / sizeof(SYSTIMER[0])] = BIT(0); // enabling interrupts at TARGET0
-
-    SYSTIMER[SYSTIMER_CONFIG_REG / sizeof(SYSTIMER[0])] = SYSTIMER_TARGET0_WORK_EN_BIT | SYSTIMER_TIMER_UNIT0_WORK_EN;
-
-    INTERRUPT[INTERRUPT_CORE0_SYSTIMER_TARGET0_INT_MAP_REG / sizeof(INTERRUPT[0])] = 7;
-
-    INTERRUPT[INTERRUPT_CORE0_CPU_INT_PRI_7_REG / sizeof(INTERRUPT[0])] = INTERRUPT_PRIORITY_MAX;
-
-    INTERRUPT[INTERRUPT_CORE0_CPU_INT_TYPE_REG / sizeof(INTERRUPT[0])] &= ~BIT(7);
-    INTERRUPT[INTERRUPT_CORE0_CPU_INT_ENABLE_REG / sizeof(INTERRUPT[0])] |= BIT(7);
+    INTERRUPT.systimer_target0_map = 7;
+    INTERRUPT.pri[7] = INTERRUPT_PRIORITY_MAX;
+    INTERRUPT.int_type &= ~BIT(7);
+    INTERRUPT.int_enable |= BIT(7);
 
     interrupt_register(7, systimer_interrupt, true);
 }
 
 void hal_clear_systimer_interrupt(void) {
-    SYSTIMER[SYSTIMER_INTERRUPT_CLR_REG / sizeof(SYSTIMER[0])] = BIT(0);
-    INTERRUPT[INTERRUPT_CORE0_CPU_INT_CLEAR_REG] = BIT(7);
+    SYSTIMER.int_clr = 1;
+    INTERRUPT.int_clear = BIT(7);
 }
