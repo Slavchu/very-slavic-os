@@ -7,12 +7,7 @@
 #include <systimer.h>
 #include <utils.h>
 
-#define CLINT_BASE 0x600C1000
-#define CLINT_MTIME_LOW (*(volatile uint32_t *)(CLINT_BASE + 0x0000))
-#define CLINT_MTIME_HIGH (*(volatile uint32_t *)(CLINT_BASE + 0x0004))
-#define CLINT_MTIMECMP_LOW (*(volatile uint32_t *)(CLINT_BASE + 0x0008))
-#define CLINT_MTIMECMP_HIGH (*(volatile uint32_t *)(CLINT_BASE + 0x000C))
-#define TICKS_PER_MS 16000
+volatile static bool isr_enable_state = false;
 
 void riscv_interrupts_panic() {
     uint32_t mepc, mtval, mcause;
@@ -37,8 +32,12 @@ uint16_t interrupt_get_id() {
 
 void interrupt_enable_isr() {
     __asm__ volatile("csrs mstatus, %0" ::"r"(1 << 3));
+    isr_enable_state = true;
 }
 
-void interrupt_disable_isr() {
+bool interrupt_disable_isr() {
+    bool current_state = isr_enable_state;
     __asm__ volatile("csrc mstatus, %0" ::"r"(1 << 3));
+    isr_enable_state = false;
+    return current_state;
 }

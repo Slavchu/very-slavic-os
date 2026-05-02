@@ -9,7 +9,7 @@ void interrupt_init();
 
 void interrupt_enable_isr();
 
-void interrupt_disable_isr();
+bool interrupt_disable_isr();
 
 void interrupt_register(uint16_t interrupt_id, interrupt_cb_t handler, bool enable);
 
