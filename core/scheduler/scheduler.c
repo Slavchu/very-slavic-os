@@ -26,10 +26,12 @@ static void update_task_queue();
 static void task_runner() {
     scheduler_ctx.current_task->entry_point();
 
-    interrupt_disable_isr();
+    bool isr_status = interrupt_disable_isr();
     scheduler_ctx.current_task->task_state = TASK_STATE_STOP;
     free(scheduler_ctx.current_task->stack);
-    interrupt_enable_isr();
+    if (isr_status) {
+        interrupt_enable_isr();
+    }
     while (1) {
         ;
     }
@@ -53,7 +55,7 @@ void scheduler_init(task_entry_point_t entry_point) {
 }
 
 struct scheduler_task_ctx *scheduler_create_task(task_entry_point_t entry_point, enum task_priority prio) {
-    interrupt_disable_isr();
+    bool isr_status = interrupt_disable_isr();
     struct scheduler_task_ctx *task_ctx = NULL;
     for (uint8_t i = 0; i < MAX_TASKS; i++) {
         if (scheduler_ctx.tasks[i].task_state == TASK_STATE_STOP) {
@@ -76,7 +78,9 @@ struct scheduler_task_ctx *scheduler_create_task(task_entry_point_t entry_point,
     task_ctx->task_state = TASK_STATE_WAITING_FOR_RUN;
     task_ctx->ctx = hal_context_operations_init(task_ctx->stack + STACK_SIZE, task_runner);
 
-    interrupt_enable_isr();
+    if (isr_status) {
+        interrupt_enable_isr();
+    }
     return task_ctx;
 }
 
