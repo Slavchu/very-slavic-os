@@ -1,6 +1,7 @@
 #include <ets_sys.h>
 #include <hal/hal.h>
 #include <hal/interrupt.h>
+#include <hal/systimer.h>
 #include <limits.h>
 #include <riscv_hal.h>
 #include <stdint.h>
@@ -16,7 +17,7 @@ static void riscv_hal_init_irq_vector(void) {
 
 static void riscv_hal_setup_irq(void) {
     riscv_hal_init_irq_vector();
-    hal_setup_systimer();
+    hal_systimer_init();
     interrupt_init();
 }
 
