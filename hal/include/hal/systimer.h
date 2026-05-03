@@ -19,4 +19,6 @@ void hal_systimer_init();
  */
 hal_alarm_id_t hal_systimer_alarm_set(uint32_t delay_ms, hal_alarm_cb_t cb, bool is_periodic, void *priv);
 
-uint64_t get_sys_time_ms();
+void hal_systimer_set_alarm_delay(hal_alarm_id_t alarm_id, uint32_t delay_ms);
+
+uint64_t hal_systimer_get_sys_time_ms();

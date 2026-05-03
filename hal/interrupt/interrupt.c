@@ -15,6 +15,7 @@ struct interrupt_param {
 static volatile struct interrupt_param interrupt_table[INTERRUPT_MAX] = {};
 
 hal_task_context interrupt_dispatcher(hal_task_context ctx) {
+    set_current_context(ctx);
     uint8_t interrupt_id = interrupt_get_id();
     auto interrupt_param = interrupt_table[interrupt_id];
 
@@ -22,8 +23,8 @@ hal_task_context interrupt_dispatcher(hal_task_context ctx) {
         LOG_ERROR("Unhandled interrupt %d", interrupt_get_id());
         return ctx;
     }
-    interrupt_param.interrupt_handlers(&ctx);
-    return ctx;
+    interrupt_param.interrupt_handlers();
+    return get_current_context();
 }
 
 void interrupt_init() {
