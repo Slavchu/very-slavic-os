@@ -5,7 +5,6 @@
 #include <hal/interrupt.h>
 #include <hal/systimer.h>
 #include <scheduler.h>
-#include <systimer.h>
 
 /*
  * The systimer is incremented on 1/16 of us. This is extremily low.
@@ -31,11 +30,14 @@ struct hal_systimer_alarm {
 struct hal_systimer_alarm alarms[SYSTIMER_MAX_ALARMS] = {0};
 
 hal_alarm_id_t hal_systimer_alarm_set(uint32_t delay_ms, hal_alarm_cb_t cb, bool is_periodic, void *priv) {
+    hal_alarm_id_t res = -1;
+    bool isr_status = interrupt_disable_isr();
+
     if (!delay_ms || !cb) {
-        return -1;
+        res = -1;
+        goto end;
     }
 
-    bool isr_status = interrupt_disable_isr();
     for (unsigned i = 0; i < SYSTIMER_MAX_ALARMS; ++i) {
         if (!alarms[i].is_enable) {
             alarms[i].cb = cb;
@@ -45,26 +47,33 @@ hal_alarm_id_t hal_systimer_alarm_set(uint32_t delay_ms, hal_alarm_cb_t cb, bool
                 alarms[i].period_ms = delay_ms;
             }
             alarms[i].is_enable = true;
-            return i;
+            res = i;
+            goto end;
         }
     }
+
+end:
     if (isr_status) {
         interrupt_enable_isr();
     }
-    return -1;
+    return res;
 }
 
-static void systimer_interrupt(hal_task_context *ctx) {
+void hal_systimer_set_alarm_delay(hal_alarm_id_t alarm_id, uint32_t delay_ms) {
+    if (alarm_id < 0 || alarm_id > SYSTIMER_MAX_ALARMS) {
+        return;
+    }
+    alarms[alarm_id].period_ms = delay_ms;
+    alarms[alarm_id].time_left_ms = delay_ms;
+}
+
+static void systimer_interrupt() {
     SYSTIMER.int_clr = 1;
     hal_clear_system_interrupt(SYSTIMER_INTERRUPT_ID);
 
-    scheduler_tick(ctx);
-
     for (unsigned i = 0; i < SYSTIMER_MAX_ALARMS; ++i) {
-        if (alarms[i].is_enable && --alarms[i].time_left_ms) {
-            if (!alarms[i].time_left_ms) {
-                alarms[i].cb(alarms[i].priv);
-            }
+        if (alarms[i].is_enable && !--alarms[i].time_left_ms) {
+            alarms[i].cb(alarms[i].priv);
             if (alarms[i].is_periodic) {
                 alarms[i].time_left_ms = alarms[i].period_ms;
                 continue;
@@ -97,7 +106,7 @@ void hal_systimer_init() {
     interrupt_register(SYSTIMER_INTERRUPT_ID, systimer_interrupt, true);
 }
 
-uint64_t get_sys_time_ms() {
+uint64_t hal_systimer_get_sys_time_ms() {
     SYSTIMER.unit0_op_reg.update = 1;
     while (!SYSTIMER.unit0_op_reg.value_valid) {
         ;

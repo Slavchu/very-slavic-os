@@ -5,7 +5,6 @@
 #include <hal/watchdog.h>
 #include <log.h>
 #include <scheduler.h>
-#include <systimer.h>
 
 void task1() {
     while (1) {
@@ -28,8 +27,8 @@ void task2() {
 void os_main() {
 
     LOG_INFO("==========SLAVIC OS BOOTED==========\r\n");
-    scheduler_create_task(task1, TASK_PRIORITY_NORMAL);
-    scheduler_create_task(task2, TASK_PRIORITY_NORMAL);
+    scheduler_create_task(task1, TASK_PRIORITY_LOW);
+    scheduler_create_task(task2, TASK_PRIORITY_HIGH);
     interrupt_enable_isr();
     while (1) {
         for (int i = 0; i < 1000000; i++) {

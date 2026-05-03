@@ -9,3 +9,5 @@ endif
 SUB_MODULES += hal/interrupt
 
 LOCAL_INCLUDES += include
+
+include $(MOD_DIR)/source.mk

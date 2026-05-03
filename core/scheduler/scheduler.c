@@ -1,4 +1,5 @@
 #include <hal/interrupt.h>
+#include <hal/systimer.h>
 #include <log.h>
 #include <scheduler.h>
 #include <stdlib.h>
@@ -12,13 +13,17 @@
 #define STACK_SIZE 4096
 #endif
 
+#define TASK_PRIORITY_TIME_QUANT_MS 2
+
 extern uintptr_t _stack_top;
 extern uintptr_t _stack_bot;
 
 static struct {
     struct scheduler_task_ctx tasks[MAX_TASKS];
     struct scheduler_task_ctx *current_task;
+    hal_alarm_id_t alarm_id;
     uint32_t frame_size_ms;
+    uint16_t next_scheduler_delay_ms;
 } scheduler_ctx;
 
 static void update_task_queue();
@@ -51,6 +56,7 @@ void scheduler_init(task_entry_point_t entry_point) {
     scheduler_ctx.current_task->entry_point = entry_point;
     scheduler_ctx.current_task->ctx = hal_context_operations_init((uint8_t *)_stack_top, entry_point);
     update_task_queue();
+    scheduler_ctx.alarm_id = hal_systimer_alarm_set(scheduler_ctx.current_task->task_priority * TASK_PRIORITY_TIME_QUANT_MS, scheduler_tick, true, NULL);
     entry_point();
 }
 
@@ -87,6 +93,10 @@ struct scheduler_task_ctx *scheduler_create_task(task_entry_point_t entry_point,
 static struct scheduler_task_ctx *task_queue[MAX_TASKS] = {0};
 static uint8_t task_queue_idx = 0;
 
+uint16_t scheduler_get_delay() {
+    return scheduler_ctx.next_scheduler_delay_ms;
+};
+
 static void update_task_queue() {
     task_queue_idx = 0;
     for (uint8_t i = 0; i < MAX_TASKS; i++) {
@@ -107,8 +117,8 @@ static struct scheduler_task_ctx *task_queue_pop() {
     return task_queue[task_queue_idx++];
 }
 
-void scheduler_tick(hal_task_context *ctx) {
-    scheduler_ctx.current_task->ctx = *ctx;
+void scheduler_tick(void *priv UNUSED) {
+    scheduler_ctx.current_task->ctx = get_current_context();
     scheduler_ctx.current_task->task_state = TASK_STATE_WAITING_FOR_RUN;
 
     struct scheduler_task_ctx *next_task = task_queue_pop();
@@ -123,6 +133,7 @@ void scheduler_tick(hal_task_context *ctx) {
 
     next_task->task_state = TASK_STATE_RUNNING;
     scheduler_ctx.current_task = next_task;
-
-    *ctx = next_task->ctx;
+    scheduler_ctx.next_scheduler_delay_ms = next_task->task_priority * TASK_PRIORITY_TIME_QUANT_MS;
+    hal_systimer_set_alarm_delay(scheduler_ctx.alarm_id, scheduler_ctx.next_scheduler_delay_ms);
+    set_current_context(next_task->ctx);
 }

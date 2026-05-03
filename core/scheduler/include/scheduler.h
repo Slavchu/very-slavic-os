@@ -32,6 +32,8 @@ void scheduler_init(task_entry_point_t entry_point);
 
 void scheduler_start();
 
-void scheduler_tick(hal_task_context *ctx);
+void scheduler_tick(void *priv);
+
+uint16_t scheduler_get_delay();
 
 struct scheduler_task_ctx *scheduler_create_task(task_entry_point_t entry_point, enum task_priority prio);

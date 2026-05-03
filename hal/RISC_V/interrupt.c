@@ -4,7 +4,6 @@
 #include <limits.h>
 #include <log.h>
 #include <stdint.h>
-#include <systimer.h>
 #include <utils.h>
 
 volatile static bool isr_enable_state = false;
