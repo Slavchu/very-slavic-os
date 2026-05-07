@@ -4,6 +4,7 @@
 #include <scheduler.h>
 #include <stdlib.h>
 #include <string.h>
+#include <syscall.h>
 
 #ifndef MAX_TASKS
 #define MAX_TASKS 32
@@ -26,7 +27,9 @@ static struct {
     uint16_t next_scheduler_delay_ms;
 } scheduler_ctx;
 
-static void update_task_queue();
+uint32_t update_task_queue();
+
+uint32_t scheduler_yield_cb();
 
 static void task_runner() {
     scheduler_ctx.current_task->entry_point();
@@ -47,6 +50,7 @@ void scheduler_init(task_entry_point_t entry_point) {
     for (uint8_t i = 0; i < MAX_TASKS; i++) {
         scheduler_ctx.tasks[i].task_state = TASK_STATE_STOP;
     }
+    syscall_bind(SYSCALL_REASON_YIELD, scheduler_yield_cb);
 
     scheduler_ctx.current_task = &scheduler_ctx.tasks[0];
     scheduler_ctx.current_task->task_priority = TASK_PRIORITY_LOW;
@@ -97,7 +101,7 @@ uint16_t scheduler_get_delay() {
     return scheduler_ctx.next_scheduler_delay_ms;
 };
 
-static void update_task_queue() {
+uint32_t update_task_queue() {
     task_queue_idx = 0;
     for (uint8_t i = 0; i < MAX_TASKS; i++) {
         if (scheduler_ctx.tasks[i].task_state == TASK_STATE_WAITING_FOR_RUN) {
@@ -107,7 +111,9 @@ static void update_task_queue() {
     if (task_queue_idx < MAX_TASKS) {
         task_queue[task_queue_idx] = NULL;
     }
+    uint32_t ret = task_queue_idx;
     task_queue_idx = 0;
+    return ret;
 }
 
 static struct scheduler_task_ctx *task_queue_pop() {
@@ -136,4 +142,17 @@ void scheduler_tick(void *priv UNUSED) {
     scheduler_ctx.next_scheduler_delay_ms = next_task->task_priority * TASK_PRIORITY_TIME_QUANT_MS;
     hal_systimer_set_alarm_delay(scheduler_ctx.alarm_id, scheduler_ctx.next_scheduler_delay_ms);
     set_current_context(next_task->ctx);
+}
+
+uint32_t scheduler_yield_cb() {
+    scheduler_tick(NULL);
+    return 0;
+}
+
+void scheduler_set_current_task_state(enum task_state state) {
+    bool isr_state = interrupt_disable_isr();
+    scheduler_ctx.current_task->task_state = state;
+    if (isr_state) {
+        interrupt_enable_isr();
+    }
 }

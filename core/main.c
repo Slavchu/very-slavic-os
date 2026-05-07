@@ -5,6 +5,7 @@
 #include <hal/watchdog.h>
 #include <log.h>
 #include <scheduler.h>
+#include <syscall.h>
 
 void task1() {
     while (1) {
@@ -21,6 +22,8 @@ void task2() {
             ;
         }
         LOG_INFO("ZALUPA 2\r\n");
+        syscall_invoke(SYSCALL_REASON_YIELD);
+        LOG_INFO("ZALUPA 2,2\r\n");
     }
 }
 

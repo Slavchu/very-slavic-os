@@ -89,7 +89,7 @@ _clint_trap:
     mret
 
 _panic_trap:
-    addi sp, sp, -128
+  addi sp, sp, -128
     sw ra,   0(sp)
     sw gp,   4(sp)
     sw tp,   8(sp)
@@ -123,4 +123,42 @@ _panic_trap:
 
     csrr t0, mepc
     sw t0, 120(sp)
+# calling interrupt implementation
+    mv a0, sp
     call riscv_interrupts_panic
+    mv sp, a0
+# restoring registers
+    lw t0, 120(sp)
+    csrw mepc, t0
+    lw ra,   0(sp)
+    lw gp,   4(sp)
+    lw tp,   8(sp)
+    lw t0,   12(sp)
+    lw t1,   16(sp)
+    lw t2,   20(sp)
+    lw s0,   24(sp)
+    lw s1,   28(sp)
+    lw a0,   32(sp)
+    lw a1,   36(sp)
+    lw a2,   40(sp)
+    lw a3,   44(sp)
+    lw a4,   48(sp)
+    lw a5,   52(sp)
+    lw a6,   56(sp)
+    lw a7,   60(sp)
+    lw s2,   64(sp)
+    lw s3,   68(sp)
+    lw s4,   72(sp)
+    lw s5,   76(sp)
+    lw s6,   80(sp)
+    lw s7,   84(sp)
+    lw s8,   88(sp)
+    lw s9,   92(sp)
+    lw s10,  96(sp)
+    lw s11, 100(sp)
+    lw t3,  104(sp)
+    lw t4,  108(sp)
+    lw t5,  112(sp)
+    lw t6,  116(sp)
+    addi sp, sp, 128
+    mret
