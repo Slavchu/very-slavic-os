@@ -28,6 +28,13 @@ void riscv_hal_init(void *UNUSED) {
 void hal_reboot(void) {
 }
 
+uint32_t hal_syscall_invoke(unsigned syscall) {
+    __asm__ volatile("mv a7, %0" ::"r"(syscall));
+    __asm__ volatile("ecall");
+    auto ctx = get_current_context();
+    return ctx->a0;
+}
+
 __attribute__((noreturn)) void _exit(int status) {
     while (1) {
         __asm__ volatile("wfi");
