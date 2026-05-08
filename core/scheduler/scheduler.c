@@ -70,6 +70,7 @@ struct scheduler_task_ctx *scheduler_create_task(task_entry_point_t entry_point,
     for (uint8_t i = 0; i < MAX_TASKS; i++) {
         if (scheduler_ctx.tasks[i].task_state == TASK_STATE_STOP) {
             task_ctx = &scheduler_ctx.tasks[i];
+            task_ctx->task_id = i;
             break;
         }
     }
@@ -124,8 +125,11 @@ static struct scheduler_task_ctx *task_queue_pop() {
 }
 
 void scheduler_tick(void *priv UNUSED) {
+    bool isr_state = interrupt_disable_isr();
     scheduler_ctx.current_task->ctx = get_current_context();
-    scheduler_ctx.current_task->task_state = TASK_STATE_WAITING_FOR_RUN;
+    if (scheduler_ctx.current_task->task_state == TASK_STATE_RUNNING) {
+        scheduler_ctx.current_task->task_state = TASK_STATE_WAITING_FOR_RUN;
+    }
 
     struct scheduler_task_ctx *next_task = task_queue_pop();
     if (!next_task) {
@@ -142,6 +146,9 @@ void scheduler_tick(void *priv UNUSED) {
     scheduler_ctx.next_scheduler_delay_ms = next_task->task_priority * TASK_PRIORITY_TIME_QUANT_MS;
     hal_systimer_set_alarm_delay(scheduler_ctx.alarm_id, scheduler_ctx.next_scheduler_delay_ms);
     set_current_context(next_task->ctx);
+    if (isr_state) {
+        interrupt_enable_isr();
+    }
 }
 
 uint32_t scheduler_yield_cb() {
@@ -149,10 +156,42 @@ uint32_t scheduler_yield_cb() {
     return 0;
 }
 
-void scheduler_set_current_task_state(enum task_state state) {
+void scheduler_set_current_task_state(enum task_state state, uint16_t blocker_id) {
     bool isr_state = interrupt_disable_isr();
     scheduler_ctx.current_task->task_state = state;
+    if (state == TASK_STATE_BLOCKED) {
+        scheduler_ctx.current_task->blocker_id = blocker_id;
+    }
     if (isr_state) {
         interrupt_enable_isr();
     }
+}
+
+uint16_t scheduler_register_blocker() {
+    static uint16_t blocker_id = 1;
+    if (!blocker_id) {
+        blocker_id++;
+    }
+    return blocker_id++;
+}
+
+bool scheduler_unblock_task_by_blocker_id(uint16_t blocker_id) {
+    bool isr_state = interrupt_disable_isr();
+    bool ret = false;
+    for (int i = 0; i < MAX_TASKS; i++) {
+        if (scheduler_ctx.tasks[i].blocker_id == blocker_id && scheduler_ctx.tasks[i].task_state == TASK_STATE_BLOCKED) {
+            scheduler_ctx.tasks[i].blocker_id = 0;
+            scheduler_ctx.tasks[i].task_state = TASK_STATE_WAITING_FOR_RUN;
+            ret = true;
+            break;
+        }
+    }
+    if (isr_state) {
+        interrupt_enable_isr();
+    }
+    return ret;
+}
+
+uint16_t get_current_task_id() {
+    return scheduler_ctx.current_task->task_id;
 }
