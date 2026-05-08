@@ -17,6 +17,5 @@ uint32_t syscall_invoke(enum syscall_reason reason) {
 }
 
 uint32_t syscall_proceed(unsigned reason) {
-    LOG_INFO("SYSCALLED\r\n");
     return syscall_table[(unsigned)reason]();
 }

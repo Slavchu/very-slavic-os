@@ -7,8 +7,6 @@
 #include <syscall.h>
 #include <utils.h>
 
-volatile static bool isr_enable_state = false;
-
 hal_task_context riscv_interrupts_panic(hal_task_context ctx) {
     set_current_context(ctx);
     uint32_t mepc, mtval, mcause;
@@ -46,12 +44,11 @@ uint16_t interrupt_get_id() {
 
 void interrupt_enable_isr() {
     __asm__ volatile("csrs mstatus, %0" ::"r"(1 << 3));
-    isr_enable_state = true;
 }
 
-bool interrupt_disable_isr() {
-    bool current_state = isr_enable_state;
-    __asm__ volatile("csrc mstatus, %0" ::"r"(1 << 3));
-    isr_enable_state = false;
-    return current_state;
+bool interrupt_disable_isr(void) {
+    uint32_t old_mstatus;
+    __asm__ volatile("csrrc %0, mstatus, %1" : "=r"(old_mstatus) : "r"(1 << 3) : "memory");
+
+    return (old_mstatus & 1 << 3) != 0;
 }

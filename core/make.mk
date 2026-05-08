@@ -5,3 +5,4 @@ SUB_MODULES += core/log
 SUB_MODULES += core/picolibc
 SUB_MODULES += core/scheduler
 SUB_MODULES += core/syscall
+SUB_MODULES += core/mutex
