@@ -1,3 +1,4 @@
+#include <arch_sync.h>
 #include <hal/context_operations.h>
 #include <hal/interrupt.h>
 #include <mutex.h>
@@ -23,6 +24,7 @@ void mutex_lock(struct mutex *mutex) {
         } else {
             mutex->locker = get_current_task_id();
             mutex->is_locked = true;
+            smp_mb_acquire();
             if (isr_status) {
                 interrupt_enable_isr();
             }
@@ -44,6 +46,7 @@ void mutex_unlock(struct mutex *mutex) {
         goto end;
     }
     scheduler_unblock_task_by_blocker_id(mutex->blocker_id);
+    smp_mb_release();
     mutex->is_locked = false;
     mutex->locker = UINT16_MAX;
 end:
