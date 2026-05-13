@@ -11,3 +11,9 @@ void hal_init(void *UNUSED) {
 void hal_clear_system_interrupt(uint8_t interrupt_id) {
     INTERRUPT.int_clear = BIT(interrupt_id);
 }
+
+void hal_idle_task() {
+    while (1) {
+        __asm__ volatile("wfi");
+    }
+}
