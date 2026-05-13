@@ -27,7 +27,7 @@ void task2() {
 }
 
 void os_main() {
-
+    run_table(FUNC_TABLE_INIT, NULL);
     printf("==========SLAVIC OS BOOTED==========\r\n");
     scheduler_create_task(task1, TASK_PRIORITY_HIGH);
     scheduler_create_task(task2, TASK_PRIORITY_HIGH);
