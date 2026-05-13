@@ -25,6 +25,7 @@ struct scheduler_task_ctx {
     task_entry_point_t entry_point;
     size_t stack_size;
     uint8_t *stack;
+    uint32_t time_delay_ms;
     uint16_t blocker_id;
     uint16_t task_id;
     enum task_state task_state;
@@ -48,3 +49,5 @@ uint16_t scheduler_register_blocker();
 bool scheduler_unblock_task_by_blocker_id(uint16_t blocker_id);
 
 uint16_t get_current_task_id();
+
+void sleep(uint32_t time_ms);

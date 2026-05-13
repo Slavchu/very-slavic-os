@@ -1,10 +1,12 @@
+#include <arch_sync.h>
+#include <hal/hal.h>
 #include <hal/interrupt.h>
 #include <hal/systimer.h>
-#include <log.h>
 #include <scheduler.h>
 #include <stdlib.h>
 #include <string.h>
 #include <syscall.h>
+#include <utils.h>
 
 #ifndef MAX_TASKS
 #define MAX_TASKS 32
@@ -14,6 +16,8 @@
 #define STACK_SIZE 4096
 #endif
 
+#define IDLE_TASK_STACK_SIZE 32
+
 #define TASK_PRIORITY_TIME_QUANT_MS 2
 
 extern uintptr_t _stack_top;
@@ -21,6 +25,7 @@ extern uintptr_t _stack_bot;
 
 static struct {
     struct scheduler_task_ctx tasks[MAX_TASKS];
+    struct scheduler_task_ctx idle_task;
     struct scheduler_task_ctx *current_task;
     hal_alarm_id_t alarm_id;
     uint32_t frame_size_ms;
@@ -45,6 +50,18 @@ static void task_runner() {
     }
 }
 
+static void scheduler_task_timer_decrementer(UNUSED void *) {
+    for (int i = 0; i < MAX_TASKS; i++) {
+        auto task = &scheduler_ctx.tasks[i];
+        if (task->task_state != TASK_STATE_BLOCKED || !task->time_delay_ms) {
+            continue;
+        }
+        if (!--task->time_delay_ms) {
+            task->task_state = TASK_STATE_WAITING_FOR_RUN;
+        }
+    }
+}
+
 void scheduler_init(task_entry_point_t entry_point) {
     memset(scheduler_ctx.tasks, 0, sizeof(scheduler_ctx.tasks));
     for (uint8_t i = 0; i < MAX_TASKS; i++) {
@@ -59,7 +76,14 @@ void scheduler_init(task_entry_point_t entry_point) {
     scheduler_ctx.current_task->stack = (uint8_t *)_stack_top;
     scheduler_ctx.current_task->entry_point = entry_point;
     scheduler_ctx.current_task->ctx = hal_context_operations_init((uint8_t *)_stack_top, entry_point);
+
+    scheduler_ctx.idle_task.stack_size = IDLE_TASK_STACK_SIZE;
+    scheduler_ctx.idle_task.stack = malloc(IDLE_TASK_STACK_SIZE);
+    scheduler_ctx.idle_task.entry_point = hal_idle_task;
+    scheduler_ctx.idle_task.ctx = hal_context_operations_init(scheduler_ctx.idle_task.stack + IDLE_TASK_STACK_SIZE, hal_idle_task);
+
     update_task_queue();
+    hal_systimer_alarm_set(1, scheduler_task_timer_decrementer, true, NULL);
     scheduler_ctx.alarm_id = hal_systimer_alarm_set(scheduler_ctx.current_task->task_priority * TASK_PRIORITY_TIME_QUANT_MS, scheduler_tick, true, NULL);
     entry_point();
 }
@@ -138,12 +162,13 @@ void scheduler_tick(void *priv UNUSED) {
     }
 
     if (!next_task) {
-        next_task = scheduler_ctx.current_task;
+        next_task = &scheduler_ctx.idle_task;
+        scheduler_ctx.next_scheduler_delay_ms = 1u;
+    } else {
+        scheduler_ctx.next_scheduler_delay_ms = next_task->task_priority * TASK_PRIORITY_TIME_QUANT_MS;
     }
 
-    next_task->task_state = TASK_STATE_RUNNING;
     scheduler_ctx.current_task = next_task;
-    scheduler_ctx.next_scheduler_delay_ms = next_task->task_priority * TASK_PRIORITY_TIME_QUANT_MS;
     hal_systimer_set_alarm_delay(scheduler_ctx.alarm_id, scheduler_ctx.next_scheduler_delay_ms);
     set_current_context(next_task->ctx);
     if (isr_state) {
@@ -194,4 +219,12 @@ bool scheduler_unblock_task_by_blocker_id(uint16_t blocker_id) {
 
 uint16_t get_current_task_id() {
     return scheduler_ctx.current_task->task_id;
+}
+
+void sleep(uint32_t time_ms) {
+    auto current_task = scheduler_ctx.current_task;
+    current_task->time_delay_ms = time_ms;
+    scheduler_set_current_task_state(TASK_STATE_BLOCKED, scheduler_register_blocker());
+    smp_mb_release();
+    syscall_invoke(SYSCALL_REASON_YIELD);
 }

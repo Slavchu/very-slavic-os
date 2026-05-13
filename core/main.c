@@ -11,9 +11,7 @@
 static struct mutex task_mtx;
 void task1() {
     while (1) {
-        for (int i = 0; i < 1000000; i++) {
-            ;
-        }
+        sleep(10000);
         mutex_lock(&task_mtx);
         LOG_INFO("ZALUPA 1\r\n");
         mutex_unlock(&task_mtx);
@@ -22,30 +20,27 @@ void task1() {
 
 void task2() {
     while (1) {
-        for (int i = 0; i < 1000000; i++) {
-            ;
-        }
-        LOG_INFO("ZALUPA 2\r\n");
+        sleep(1000);
         mutex_lock(&task_mtx);
-        syscall_invoke(SYSCALL_REASON_YIELD);
+        LOG_INFO("ZALUPA 2\r\n");
         mutex_unlock(&task_mtx);
+        sleep(1000);
         LOG_INFO("ZALUPA 2,2\r\n");
-        syscall_invoke(SYSCALL_REASON_YIELD);
     }
 }
 
 void os_main() {
 
     LOG_INFO("==========SLAVIC OS BOOTED==========\r\n");
-    scheduler_create_task(task1, TASK_PRIORITY_LOW);
+    scheduler_create_task(task1, TASK_PRIORITY_HIGH);
     scheduler_create_task(task2, TASK_PRIORITY_HIGH);
     mutex_init(&task_mtx);
     interrupt_enable_isr();
     while (1) {
-        for (int i = 0; i < 1000000; i++) {
-            ;
-        }
+        sleep(5000);
+        mutex_lock(&task_mtx);
         LOG_INFO("ZALUPA 3\r\n");
+        mutex_unlock(&task_mtx);
     }
 }
 

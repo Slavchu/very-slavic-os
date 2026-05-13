@@ -11,3 +11,5 @@ void hal_reboot(void);
 void hal_clear_system_interrupt(uint8_t interrupt_id);
 
 uint32_t hal_syscall_invoke(unsigned syscall);
+
+void hal_idle_task();
