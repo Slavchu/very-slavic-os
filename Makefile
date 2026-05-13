@@ -73,12 +73,12 @@ $(BUILD_DIR)/core.bin: $(BUILD_DIR)/core.elf
 	$(call CREATE_IMAGE_CMD,$<)
 
 # Linker
-$(BUILD_DIR)/core.elf: $(OBJS) $(DEPS)
+$(BUILD_DIR)/core.elf: $(OBJS) 
 	$(ECHO) ">>> Linking: $@"
 	$(LD) $(LDFLAGS) $(OBJS) $(GLOBAL_LDFLAGS) -o $@
 
 # C compiling
-$(BUILD_DIR)/%.c.o: %.c
+$(BUILD_DIR)/%.c.o: %.c $(DEPS)
 	@mkdir -p $(dir $@)
 	$(ECHO) "$CC $<"
 	$(CC) $(FINAL_CFLAGS) -c $< -o $@

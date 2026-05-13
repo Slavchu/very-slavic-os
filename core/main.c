@@ -1,4 +1,3 @@
-#include <ets_sys.h>
 #include <func_table.h>
 #include <hal/hal.h>
 #include <hal/interrupt.h>
@@ -13,7 +12,7 @@ void task1() {
     while (1) {
         sleep(10000);
         mutex_lock(&task_mtx);
-        LOG_INFO("ZALUPA 1\r\n");
+        LOG_INFO("ZALUPA 1");
         mutex_unlock(&task_mtx);
     }
 }
@@ -22,16 +21,14 @@ void task2() {
     while (1) {
         sleep(1000);
         mutex_lock(&task_mtx);
-        LOG_INFO("ZALUPA 2\r\n");
+        LOG_INFO("ZALUPA 2");
         mutex_unlock(&task_mtx);
-        sleep(1000);
-        LOG_INFO("ZALUPA 2,2\r\n");
     }
 }
 
 void os_main() {
 
-    LOG_INFO("==========SLAVIC OS BOOTED==========\r\n");
+    printf("==========SLAVIC OS BOOTED==========\r\n");
     scheduler_create_task(task1, TASK_PRIORITY_HIGH);
     scheduler_create_task(task2, TASK_PRIORITY_HIGH);
     mutex_init(&task_mtx);
@@ -39,7 +36,7 @@ void os_main() {
     while (1) {
         sleep(5000);
         mutex_lock(&task_mtx);
-        LOG_INFO("ZALUPA 3\r\n");
+        LOG_INFO("ZALUPA 3");
         mutex_unlock(&task_mtx);
     }
 }

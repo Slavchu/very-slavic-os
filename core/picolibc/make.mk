@@ -24,4 +24,6 @@ $(PICOLIBC_TARGET): $(PICOLIBC_BUILD)/build.ninja
 	@ninja -C $(PICOLIBC_BUILD) install > /dev/null
 
 GLOBAL_CFLAGS += -isystem $(PICOLIBC_INSTALL)/include
+LOCAL_INCLUDES += picolibc/libc/include
+GLOBAL_INCLUDES += -I$(PICOLIBC_BUILD)
 GLOBAL_LDFLAGS += -L$(PICOLIBC_INSTALL)/lib -Wl,--start-group -lc -lgcc -Wl,--end-group

@@ -1,9 +1,7 @@
 #pragma once
 #include <stdint.h>
+#include <stdio.h>
 #include <utils.h>
-#ifdef TARGET_esp32_c3
-#include <ets_sys.h>
-#endif // TARGET_esp32_c3
 
 #ifndef ME
 #define ME ""
@@ -20,12 +18,8 @@ typedef enum : uint8_t {
 #define MODULE_LOG_LEVEL LOG_LEVEL_DEFAULT
 #endif
 
-#ifndef LOG_PRINTF_FUNC
-#define LOG_PRINTF_FUNC _print_log
-#endif // LOG_PRINTF_FUNC
-
 // Do not use. USE LOG_##LEVEL instead. For example :LOG_INFO("Some log %s", some_str)
-#define _LOG_IMPL(level, fmt, ...) LOG_PRINTF_FUNC("%s " ME ":\t" fmt, level_to_string(level), ##__VA_ARGS__)
+#define _LOG_IMPL(level, fmt, ...) printf("%s " ME ":\t" fmt "\r\n", level_to_string(level), ##__VA_ARGS__)
 
 #define LOG_CRITICAL(fmt, ...) _LOG_IMPL(LEVEL_CRITICAL, fmt, ##__VA_ARGS__)
 

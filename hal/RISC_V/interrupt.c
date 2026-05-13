@@ -27,10 +27,10 @@ hal_task_context riscv_interrupts_panic(hal_task_context ctx) {
         break;
     }
 
-    LOG_CRITICAL("=== SLAVIC KERNEL BLYATED ===\r\n");
-    LOG_CRITICAL("MCAUSE : %d (0x%08x)\r\n", mcause, mcause);
-    LOG_CRITICAL("MEPC   : 0x%08x \n", mepc);
-    LOG_CRITICAL("MTVAL  : 0x%08x \r\n", mtval);
+    LOG_CRITICAL("=== SLAVIC KERNEL BLYATED ===");
+    LOG_CRITICAL("MCAUSE : %d (0x%08x)", mcause, mcause);
+    LOG_CRITICAL("MEPC   : 0x%08x ", mepc);
+    LOG_CRITICAL("MTVAL  : 0x%08x ", mtval);
     LOG_CRITICAL("===========================\n");
     hal_reboot();
     return get_current_context();

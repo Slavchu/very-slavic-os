@@ -1,4 +1,3 @@
-#include <ets_sys.h>
 #include <hal/hal.h>
 #include <hal/interrupt.h>
 #include <hal/systimer.h>
