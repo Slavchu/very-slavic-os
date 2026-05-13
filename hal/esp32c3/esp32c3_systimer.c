@@ -1,4 +1,3 @@
-#include "log.h"
 #include <esp32c3/esp32c3_common.h>
 #include <esp32c3/esp32c3_periph.h>
 #include <hal/hal.h>
@@ -11,7 +10,7 @@
  * I need a 1 ms precision
  */
 #define TICKS_PER_US 16
-#define SYSTIMER_TIMER_PERIOD_MS 1000
+#define SYSTIMER_TIMER_PERIOD_MS 1
 #define SYSTIMER_TIMER_PERIOD_TICKS SYSTIMER_TIMER_PERIOD_MS * 1000 * TICKS_PER_US
 
 #ifndef SYSTIMERS_MAX_ALARMS
