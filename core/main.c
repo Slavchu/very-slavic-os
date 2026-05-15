@@ -5,39 +5,35 @@
 #include <log.h>
 #include <mutex.h>
 #include <scheduler.h>
-#include <syscall.h>
+#include <utils.h>
 
-static struct mutex task_mtx;
-void task1() {
-    while (1) {
-        sleep(10000);
-        mutex_lock(&task_mtx);
-        LOG_INFO("ZALUPA 1");
-        mutex_unlock(&task_mtx);
-    }
-}
-
-void task2() {
-    while (1) {
-        sleep(1000);
-        mutex_lock(&task_mtx);
-        LOG_INFO("ZALUPA 2");
-        mutex_unlock(&task_mtx);
-    }
-}
-
+const char *greetings_to_traveler = 
+  C_B_YELLOW "======================================================\r\n"
+               "                  VERY SLAVIC OS\r\n"
+               "======================================================\r\n" C_RESET
+    "In the beginning, Svarog forged the Firmware from\r\n"
+    "bare metal and raw hex.\r\n"
+    "\r\n"
+    "Now, " C_B_RED "Perun" C_RESET " strikes the MCU with hardware interrupts,\r\n"
+    "his hammer ready to smite infinite loops via the Watchdog.\r\n"
+    C_CYAN "Stribog" C_RESET " breathes life into the I2C and SPI buses,\r\n"
+    "routing bytes across the PCB tracks. " C_MAGENTA "Veles" C_RESET " guards the\r\n"
+    "dark, non-volatile pages of Flash memory and EEPROM,\r\n"
+    "while " C_BLUE "Mokosh" C_RESET " carefully weaves the threads of the OS\r\n"
+    "scheduler, protecting your stack from overflow.\r\n"
+    "\r\n"
+    C_B_GREEN "[ OK ]" C_RESET " Perun intilized hardware.\r\n"
+    C_B_GREEN "[ OK ]" C_RESET " Stribog blessed the traveler.\r\n"
+    "\r\n"
+    C_B_YELLOW "May the Gods protect your uptime and keep\r\n"
+    "Hard Faults at bay! CLI is yours.\r\n"
+    "======================================================\r\n" C_RESET;
 void os_main() {
     run_table(FUNC_TABLE_INIT, NULL);
-    printf("==========SLAVIC OS BOOTED==========\r\n");
-    scheduler_create_task(task1, TASK_PRIORITY_HIGH);
-    scheduler_create_task(task2, TASK_PRIORITY_HIGH);
-    mutex_init(&task_mtx);
+    cli_printf("%s\r\n", greetings_to_traveler);
     interrupt_enable_isr();
     while (1) {
         sleep(5000);
-        mutex_lock(&task_mtx);
-        LOG_INFO("ZALUPA 3");
-        mutex_unlock(&task_mtx);
     }
 }
 

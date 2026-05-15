@@ -1,7 +1,6 @@
 #pragma once
+#include <cli.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <utils.h>
 
 #ifndef ME
 #define ME ""
@@ -19,7 +18,7 @@ typedef enum : uint8_t {
 #endif
 
 // Do not use. USE LOG_##LEVEL instead. For example :LOG_INFO("Some log %s", some_str)
-#define _LOG_IMPL(level, fmt, ...) printf("%s " ME ":\t" fmt "\r\n", level_to_string(level), ##__VA_ARGS__)
+#define _LOG_IMPL(level, fmt, ...) cli_printf("%s " ME ":\t" fmt "\r\n", level_to_string(level), ##__VA_ARGS__)
 
 #define LOG_CRITICAL(fmt, ...) _LOG_IMPL(LEVEL_CRITICAL, fmt, ##__VA_ARGS__)
 
@@ -40,7 +39,5 @@ typedef enum : uint8_t {
 #else
 #define LOG_DEBUG(fmt, ...)
 #endif
-
-void _print_log(const char *fmt, ...);
 
 const char *level_to_string(log_level_t level);
