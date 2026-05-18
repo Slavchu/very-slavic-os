@@ -1,5 +1,6 @@
 #pragma once
 #include <bitops.h>
+#include <esp32c3/esp32c3_periph_gpio.h>
 #include <esp32c3/esp32c3_periph_interrupt.h>
 #include <esp32c3/esp32c3_periph_systimer.h>
 #include <stdint.h>
@@ -8,12 +9,12 @@
 /* Sincerely, very-slavic-os developer */
 extern volatile struct esp32c3_systimer SYSTIMER;
 extern volatile struct esp32c3_interrupt_matrix INTERRUPT;
+extern volatile struct esp32c3_gpio GPIO;
 
 extern volatile uint32_t UART0[];
 extern volatile uint32_t UART1[];
 extern volatile uint32_t SPIMEM1[];
 extern volatile uint32_t SPIMEM0[];
-extern volatile uint32_t GPIO[];
 extern volatile uint32_t SDM[];
 extern volatile uint32_t RTCCNTL[];
 extern volatile uint32_t RTCIO[];
