@@ -7,7 +7,7 @@
 #include <syscall.h>
 #include <utils.h>
 
-hal_task_context riscv_interrupts_panic(hal_task_context ctx) {
+USED hal_task_context riscv_interrupts_panic(hal_task_context ctx) {
     set_current_context(ctx);
     uint32_t mepc, mtval, mcause;
     __asm__ volatile("csrr %0, mepc\n"

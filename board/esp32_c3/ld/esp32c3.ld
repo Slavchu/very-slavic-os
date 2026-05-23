@@ -6,7 +6,7 @@ MEMORY
   /* Internal SRAM 1: Instruction Bus */
   IRAM (RX) : ORIGIN = 0x40380400, LENGTH = 16K 
   /* Internal SRAM 1: Data Bus */
-  DRAM (RW) : ORIGIN = 0x3FC80000 + LENGTH(IRAM), LENGTH = 128K
+  DRAM (RW) : ORIGIN = 0x3FC80000 + LENGTH(IRAM), LENGTH = 320K
 }
 
 _stack_top = ORIGIN(DRAM) + LENGTH(DRAM);

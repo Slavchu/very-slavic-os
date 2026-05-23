@@ -2,11 +2,12 @@
 #include <scheduler.h>
 #include <snake.h>
 #include <stdio.h>
+#include <string.h>
 #include <utils.h>
 
-#define FIELD_SIZE_X 30
-#define FIELD_SIZE_Y 30
-#define SNAKE_MAX_LEN 256
+#define FIELD_SIZE_X 16
+#define FIELD_SIZE_Y 16
+#define SNAKE_MAX_LEN 255
 
 #define CHAR_BOARDER '#'
 #define CHAR_HEAD 'X'
@@ -31,37 +32,29 @@ struct snake {
     enum snake_direction dir;
 };
 
-static volatile struct snake *snake_ptr = NULL;
-static volatile struct coordinate apple = {.x = 10, .y = 10};
+static struct snake snake_instance;
+static struct coordinate apple = {.x = 10, .y = 10};
 static volatile bool run = 1;
 static uint8_t score = 0;
 
 static void render_field() {
-    if (!snake_ptr) {
-        return;
-    }
-
-    char buffer[FIELD_SIZE_Y][FIELD_SIZE_X];
-    for (unsigned y = 0; y < FIELD_SIZE_Y; y++) {
-        for (unsigned x = 0; x < FIELD_SIZE_X; x++) {
-            buffer[y][x] = ' ';
-        }
-    }
+    static char buffer[FIELD_SIZE_Y][FIELD_SIZE_X];
+    memset(buffer, ' ', sizeof(buffer));
 
     if (apple.y < FIELD_SIZE_Y && apple.x < FIELD_SIZE_X) {
         buffer[apple.y][apple.x] = 'O';
     }
 
-    for (int i = 0; i < snake_ptr->snake_len; i++) {
-        uint8_t bx = snake_ptr->body_cordinates[i].x;
-        uint8_t by = snake_ptr->body_cordinates[i].y;
+    for (int i = 0; i < snake_instance.snake_len; i++) {
+        uint8_t bx = snake_instance.body_cordinates[i].x;
+        uint8_t by = snake_instance.body_cordinates[i].y;
         if (bx < FIELD_SIZE_X && by < FIELD_SIZE_Y) {
             buffer[by][bx] = CHAR_BODY;
         }
     }
 
-    uint8_t hx = snake_ptr->cord_head.x;
-    uint8_t hy = snake_ptr->cord_head.y;
+    const uint8_t hx = snake_instance.cord_head.x;
+    const uint8_t hy = snake_instance.cord_head.y;
     if (hx < FIELD_SIZE_X && hy < FIELD_SIZE_Y) {
         buffer[hy][hx] = CHAR_HEAD;
     }
@@ -100,30 +93,29 @@ static void render_field() {
 }
 
 static void input_task() {
+    cli_block_input();
+
     while (run) {
-        if (!snake_ptr) {
-            continue;
-        }
         int c = getchar();
         switch (c) {
         case 'w':
-            if (snake_ptr->dir != DIRECTION_DOWN) {
-                snake_ptr->dir = DIRECTION_UP;
+            if (snake_instance.dir != DIRECTION_DOWN) {
+                snake_instance.dir = DIRECTION_UP;
             }
             break;
         case 's':
-            if (snake_ptr->dir != DIRECTION_UP) {
-                snake_ptr->dir = DIRECTION_DOWN;
+            if (snake_instance.dir != DIRECTION_UP) {
+                snake_instance.dir = DIRECTION_DOWN;
             }
             break;
         case 'a':
-            if (snake_ptr->dir != DIRECTION_RIGHT) {
-                snake_ptr->dir = DIRECTION_LEFT;
+            if (snake_instance.dir != DIRECTION_RIGHT) {
+                snake_instance.dir = DIRECTION_LEFT;
             }
             break;
         case 'd':
-            if (snake_ptr->dir != DIRECTION_LEFT) {
-                snake_ptr->dir = DIRECTION_RIGHT;
+            if (snake_instance.dir != DIRECTION_LEFT) {
+                snake_instance.dir = DIRECTION_RIGHT;
             }
             break;
         case 3:
@@ -132,89 +124,70 @@ static void input_task() {
         }
         sleep(10);
     }
+    cli_unblock_input();
 }
 
 static void snake_tick() {
-    if (!snake_ptr) {
-        return;
-    }
+    struct coordinate next_head = snake_instance.cord_head;
 
-    struct coordinate next_head = snake_ptr->cord_head;
-
-    switch (snake_ptr->dir) {
-    case DIRECTION_UP:
+    if (snake_instance.dir == DIRECTION_UP)
         next_head.y--;
-        break;
-    case DIRECTION_DOWN:
+    if (snake_instance.dir == DIRECTION_DOWN)
         next_head.y++;
-        break;
-    case DIRECTION_LEFT:
+    if (snake_instance.dir == DIRECTION_LEFT)
         next_head.x--;
-        break;
-    case DIRECTION_RIGHT:
+    if (snake_instance.dir == DIRECTION_RIGHT)
         next_head.x++;
-        break;
-    }
 
-    if (next_head.x >= FIELD_SIZE_X) {
-        next_head.x = (snake_ptr->dir == DIRECTION_LEFT) ? FIELD_SIZE_X - 1 : 0;
-    }
-    if (next_head.y >= FIELD_SIZE_Y) {
-        next_head.y = (snake_ptr->dir == DIRECTION_UP) ? FIELD_SIZE_Y - 1 : 0;
-    }
+    // Ідеальний Border Wrap за допомогою магії бітів (працює лише для степеней 2)
+    next_head.x = (next_head.x) & (FIELD_SIZE_X - 1);
+    next_head.y = (next_head.y) & (FIELD_SIZE_Y - 1);
 
-    for (int i = 0; i < snake_ptr->snake_len; i++) {
-        if (snake_ptr->body_cordinates[i].x == next_head.x && snake_ptr->body_cordinates[i].y == next_head.y) {
+    for (int i = 0; i < snake_instance.snake_len; i++) {
+        if (snake_instance.body_cordinates[i].x == next_head.x && snake_instance.body_cordinates[i].y == next_head.y) {
             run = 0;
             return;
         }
     }
 
-    struct coordinate old_tail;
-    if (snake_ptr->snake_len > 0) {
-        old_tail = snake_ptr->body_cordinates[snake_ptr->snake_len - 1];
-    } else {
-        old_tail = snake_ptr->cord_head;
+    struct coordinate old_tail = (snake_instance.snake_len > 0) ? snake_instance.body_cordinates[snake_instance.snake_len - 1] : snake_instance.cord_head;
+
+    for (int i = snake_instance.snake_len - 1; i > 0; i--) {
+        snake_instance.body_cordinates[i] = snake_instance.body_cordinates[i - 1];
+    }
+    if (snake_instance.snake_len > 0) {
+        snake_instance.body_cordinates[0] = snake_instance.cord_head;
     }
 
-    for (int i = snake_ptr->snake_len - 1; i > 0; i--) {
-        snake_ptr->body_cordinates[i] = snake_ptr->body_cordinates[i - 1];
-    }
-    if (snake_ptr->snake_len > 0) {
-        snake_ptr->body_cordinates[0] = snake_ptr->cord_head;
-    }
-
-    snake_ptr->cord_head = next_head;
+    snake_instance.cord_head = next_head;
 
     if (next_head.x == apple.x && next_head.y == apple.y) {
-        if (snake_ptr->snake_len < SNAKE_MAX_LEN) {
-            snake_ptr->body_cordinates[snake_ptr->snake_len] = old_tail;
-            snake_ptr->snake_len++;
+        if (snake_instance.snake_len < SNAKE_MAX_LEN) {
+            snake_instance.body_cordinates[snake_instance.snake_len] = old_tail;
+            snake_instance.snake_len++;
         }
-
         score++;
-        apple.x = (next_head.x * 7 + 13) % FIELD_SIZE_X;
-        apple.y = (next_head.y * 11 + 17) % FIELD_SIZE_Y;
+
+        apple.x = (next_head.x * 7 + 13) & (FIELD_SIZE_X - 1);
+        apple.y = (next_head.y * 11 + 17) & (FIELD_SIZE_Y - 1);
     }
 }
 
 static void snake_task() {
-    cli_block_input();
     cli_block_output();
+    snake_instance.snake_len = 0;
+    snake_instance.cord_head.x = 0;
+    snake_instance.cord_head.y = 0;
     score = 0;
-    volatile struct snake s;
-    snake_ptr = &s;
     run = 1;
     while (run) {
         snake_tick();
         render_field();
         sleep(100);
     }
-    snake_ptr = NULL;
 
     printf("\033[?25h\033[0m\033[2J");
     fflush(stdout);
-    cli_unblock_input();
     cli_unblock_output();
     cli_printf(C_B_GREEN "Score: %d\n" C_RESET, score);
 }
@@ -222,7 +195,8 @@ static void snake_task() {
 void cmd_snake(int argc UNUSED, char **argv UNUSED) {
     cli_unblock_input();
     cli_unblock_output();
-    sleep(5);
     scheduler_create_task(input_task, TASK_PRIORITY_HIGH);
     scheduler_create_task(snake_task, TASK_PRIORITY_HIGH);
+
+    sleep(5);
 }

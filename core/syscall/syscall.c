@@ -4,10 +4,6 @@
 
 static syscall_cb_t syscall_table[SYSCALL_MAX] = {0};
 
-static bool is_reason_valid(unsigned reason) {
-    return reason < SYSCALL_MAX;
-}
-
 void syscall_bind(enum syscall_reason reason, syscall_cb_t cb) {
     syscall_table[(unsigned)reason] = cb;
 }
