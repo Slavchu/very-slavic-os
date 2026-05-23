@@ -84,7 +84,7 @@ $(BUILD_DIR)/%.c.o: %.c $(DEPS)
 	$(CC) $(FINAL_CFLAGS) -c $< -o $@
 
 # Assembly compiling
-$(BUILD_DIR)/%.s.o: %.s
+$(BUILD_DIR)/%.s.o: %.s $(DEPS)
 	@mkdir -p $(dir $@)
 	$(ECHO) "$AS $<"
 	$(CC) $(ASFLAGS) $(FINAL_CFLAGS) -c $< -o $@

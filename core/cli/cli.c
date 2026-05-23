@@ -14,7 +14,7 @@ typedef struct {
 } cli_command_t;
 
 static cli_command_t cmd_table[CLI_MAX_COMMANDS];
-static int cmd_count = 0;
+static unsigned cmd_count = 0;
 static char rx_buffer[CLI_BUFFER_SIZE];
 static int rx_index = 0;
 static const char *prompt = "CLI> ";
@@ -41,10 +41,22 @@ static void cli_execute(void) {
     rx_index = 0;
     memset(rx_buffer, 0, CLI_BUFFER_SIZE);
 
-    char *token = strtok(tmp_buf, " ");
-    while (token != NULL && argc < CLI_MAX_ARGS) {
-        argv[argc++] = token;
-        token = strtok(NULL, " ");
+    char *p = tmp_buf;
+    while (*p != '\0' && argc < CLI_MAX_ARGS) {
+        while (*p == ' ') {
+            p++;
+        }
+        if (*p == '\0') {
+            break;
+        }
+        argv[argc++] = p;
+        while (*p != '\0' && *p != ' ') {
+            p++;
+        }
+        if (*p == ' ') {
+            *p = '\0';
+            p++;
+        }
     }
 
     if (argc > 0) {
@@ -160,7 +172,6 @@ void cli_unblock_input() {
 static void cli_init(void *UNUSED) {
     mutex_init(&cli_output_mtx);
     mutex_init(&cli_input_mtx);
-    cmd_count = 0;
     rx_index = 0;
     memset(rx_buffer, 0, CLI_BUFFER_SIZE);
     printf("\r\n");

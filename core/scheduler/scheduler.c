@@ -16,17 +16,17 @@
 #define STACK_SIZE 4096
 #endif
 
-#define IDLE_TASK_STACK_SIZE 32
+#define IDLE_TASK_STACK_SIZE 312
 
 #define TASK_PRIORITY_TIME_QUANT_MS 2
 
 extern uintptr_t _stack_top;
 extern uintptr_t _stack_bot;
 
-static struct {
-    struct scheduler_task_ctx tasks[MAX_TASKS];
-    struct scheduler_task_ctx idle_task;
-    struct scheduler_task_ctx *current_task;
+volatile static struct {
+    volatile struct scheduler_task_ctx tasks[MAX_TASKS];
+    volatile struct scheduler_task_ctx idle_task;
+    volatile struct scheduler_task_ctx *current_task;
     hal_alarm_id_t alarm_id;
     uint32_t frame_size_ms;
     uint16_t next_scheduler_delay_ms;
@@ -63,7 +63,7 @@ static void scheduler_task_timer_decrementer(UNUSED void *) {
 }
 
 void scheduler_init(task_entry_point_t entry_point) {
-    memset(scheduler_ctx.tasks, 0, sizeof(scheduler_ctx.tasks));
+    memset((void *)scheduler_ctx.tasks, 0, sizeof(scheduler_ctx.tasks));
     for (uint8_t i = 0; i < MAX_TASKS; i++) {
         scheduler_ctx.tasks[i].task_state = TASK_STATE_STOP;
     }
@@ -88,9 +88,9 @@ void scheduler_init(task_entry_point_t entry_point) {
     entry_point();
 }
 
-struct scheduler_task_ctx *scheduler_create_task(task_entry_point_t entry_point, enum task_priority prio) {
+volatile struct scheduler_task_ctx *scheduler_create_task(task_entry_point_t entry_point, enum task_priority prio) {
     bool isr_status = interrupt_disable_isr();
-    struct scheduler_task_ctx *task_ctx = NULL;
+    volatile struct scheduler_task_ctx *task_ctx = NULL;
     for (uint8_t i = 0; i < MAX_TASKS; i++) {
         if (scheduler_ctx.tasks[i].task_state == TASK_STATE_STOP) {
             task_ctx = &scheduler_ctx.tasks[i];
@@ -119,8 +119,8 @@ struct scheduler_task_ctx *scheduler_create_task(task_entry_point_t entry_point,
     return task_ctx;
 }
 
-static struct scheduler_task_ctx *task_queue[MAX_TASKS] = {0};
-static uint8_t task_queue_idx = 0;
+volatile static struct scheduler_task_ctx *task_queue[MAX_TASKS] = {0};
+volatile static uint8_t task_queue_idx = 0;
 
 uint16_t scheduler_get_delay() {
     return scheduler_ctx.next_scheduler_delay_ms;
@@ -141,7 +141,7 @@ uint32_t update_task_queue() {
     return ret;
 }
 
-static struct scheduler_task_ctx *task_queue_pop() {
+volatile static struct scheduler_task_ctx *task_queue_pop() {
     if (task_queue_idx == MAX_TASKS || task_queue[task_queue_idx] == NULL) {
         return NULL;
     }
@@ -155,7 +155,7 @@ void scheduler_tick(void *priv UNUSED) {
         scheduler_ctx.current_task->task_state = TASK_STATE_WAITING_FOR_RUN;
     }
 
-    struct scheduler_task_ctx *next_task = task_queue_pop();
+    volatile struct scheduler_task_ctx *next_task = task_queue_pop();
     if (!next_task) {
         update_task_queue();
         next_task = task_queue_pop();

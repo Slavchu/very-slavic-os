@@ -13,7 +13,6 @@ hal_task_context hal_context_operations_init(void *stack_top, void *entry_point)
     ctx->mepc = (uint32_t)entry_point;
     ctx->sp = sp + sizeof(struct arch_context_t);
 
-    register uint32_t current_gp __asm__("gp");
-    ctx->gp = current_gp;
+    __asm__ volatile("mv %0, gp" : "=r"(ctx->gp)::"memory");
     return (hal_task_context)ctx;
 }

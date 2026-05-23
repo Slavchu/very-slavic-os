@@ -40,7 +40,7 @@ void scheduler_tick(void *priv);
 
 uint16_t scheduler_get_delay();
 
-struct scheduler_task_ctx *scheduler_create_task(task_entry_point_t entry_point, enum task_priority prio);
+volatile struct scheduler_task_ctx *scheduler_create_task(task_entry_point_t entry_point, enum task_priority prio);
 
 void scheduler_set_current_task_state(enum task_state state, uint16_t blocker_id);
 
